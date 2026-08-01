@@ -53,7 +53,8 @@
         "chips",
         "ai"
       ],
-      "blurb": "Consumer hardware, Apple-silicon (M-series) and services."
+      "blurb": "Consumer hardware, Apple-silicon (M-series) and services.",
+      "icon": "apple"
     },
     {
       "id": "microsoft",
@@ -95,7 +96,8 @@
         "cloud",
         "social"
       ],
-      "blurb": "Google Search, Cloud, DeepMind/Gemini, YouTube."
+      "blurb": "Google Search, Cloud, DeepMind/Gemini, YouTube.",
+      "icon": "google"
     },
     {
       "id": "amazon",
@@ -133,7 +135,8 @@
         "social",
         "ai"
       ],
-      "blurb": "Facebook, Instagram, WhatsApp and Llama models."
+      "blurb": "Facebook, Instagram, WhatsApp and Llama models.",
+      "icon": "meta"
     },
     {
       "id": "nvidia",
@@ -152,7 +155,8 @@
         "chips",
         "ai"
       ],
-      "blurb": "GPUs and CUDA \u2014 the compute engine of the AI boom."
+      "blurb": "GPUs and CUDA \u2014 the compute engine of the AI boom.",
+      "icon": "nvidia"
     },
     {
       "id": "tesla",
@@ -170,7 +174,8 @@
         "ai",
         "chips"
       ],
-      "blurb": "EVs, autonomy (FSD) and the Dojo training silicon."
+      "blurb": "EVs, autonomy (FSD) and the Dojo training silicon.",
+      "icon": "tesla"
     },
     {
       "id": "netflix",
@@ -187,7 +192,8 @@
       "domains": [
         "social"
       ],
-      "blurb": "Streaming media and original content at scale."
+      "blurb": "Streaming media and original content at scale.",
+      "icon": "netflix"
     },
     {
       "id": "adobe",
@@ -277,7 +283,8 @@
       "domains": [
         "chips"
       ],
-      "blurb": "x86 CPUs and a growing U.S. foundry business."
+      "blurb": "x86 CPUs and a growing U.S. foundry business.",
+      "icon": "intel"
     },
     {
       "id": "amd",
@@ -295,7 +302,8 @@
         "chips",
         "ai"
       ],
-      "blurb": "Ryzen/EPYC CPUs and Instinct AI accelerators."
+      "blurb": "Ryzen/EPYC CPUs and Instinct AI accelerators.",
+      "icon": "amd"
     },
     {
       "id": "qualcomm",
@@ -312,7 +320,8 @@
       "domains": [
         "chips"
       ],
-      "blurb": "Mobile SoCs, modems and Snapdragon platforms."
+      "blurb": "Mobile SoCs, modems and Snapdragon platforms.",
+      "icon": "qualcomm"
     },
     {
       "id": "broadcom",
@@ -330,7 +339,8 @@
         "chips",
         "enterprise"
       ],
-      "blurb": "Networking silicon and infra software (VMware)."
+      "blurb": "Networking silicon and infra software (VMware).",
+      "icon": "broadcom"
     },
     {
       "id": "cisco",
@@ -348,7 +358,8 @@
         "cloud",
         "chips"
       ],
-      "blurb": "Networking hardware, security and observability."
+      "blurb": "Networking hardware, security and observability.",
+      "icon": "cisco"
     },
     {
       "id": "paypal",
@@ -366,7 +377,8 @@
       "domains": [
         "fintech"
       ],
-      "blurb": "Digital payments, checkout and Venmo."
+      "blurb": "Digital payments, checkout and Venmo.",
+      "icon": "paypal"
     },
     {
       "id": "block",
@@ -400,7 +412,8 @@
       "domains": [
         "fintech"
       ],
-      "blurb": "Crypto exchange and on-chain financial rails."
+      "blurb": "Crypto exchange and on-chain financial rails.",
+      "icon": "coinbase"
     },
     {
       "id": "visa",
@@ -417,7 +430,8 @@
       "domains": [
         "fintech"
       ],
-      "blurb": "Global card network and payment processing."
+      "blurb": "Global card network and payment processing.",
+      "icon": "visa"
     },
     {
       "id": "uber",
@@ -435,7 +449,8 @@
         "commerce",
         "ai"
       ],
-      "blurb": "Mobility and delivery marketplaces with routing AI."
+      "blurb": "Mobility and delivery marketplaces with routing AI.",
+      "icon": "uber"
     },
     {
       "id": "airbnb",
@@ -453,7 +468,8 @@
       "domains": [
         "commerce"
       ],
-      "blurb": "Global marketplace for stays and experiences."
+      "blurb": "Global marketplace for stays and experiences.",
+      "icon": "airbnb"
     },
     {
       "id": "doordash",
@@ -470,7 +486,8 @@
       "domains": [
         "commerce"
       ],
-      "blurb": "Last-mile local delivery logistics platform."
+      "blurb": "Last-mile local delivery logistics platform.",
+      "icon": "doordash"
     },
     {
       "id": "snowflake",
@@ -488,7 +505,8 @@
         "cloud",
         "enterprise"
       ],
-      "blurb": "Cloud data warehouse and data-sharing network."
+      "blurb": "Cloud data warehouse and data-sharing network.",
+      "icon": "snowflake"
     },
     {
       "id": "databricks",
@@ -506,7 +524,8 @@
         "cloud",
         "ai"
       ],
-      "blurb": "Lakehouse platform for data engineering and ML."
+      "blurb": "Lakehouse platform for data engineering and ML.",
+      "icon": "databricks"
     },
     {
       "id": "servicenow",
@@ -541,7 +560,8 @@
         "ai",
         "enterprise"
       ],
-      "blurb": "Data-integration and AI platforms (Foundry, AIP)."
+      "blurb": "Data-integration and AI platforms (Foundry, AIP).",
+      "icon": "palantir"
     },
     {
       "id": "openai",
@@ -575,7 +595,8 @@
       "domains": [
         "social"
       ],
-      "blurb": "Snapchat and an AR camera platform."
+      "blurb": "Snapchat and an AR camera platform.",
+      "icon": "snapchat"
     },
     {
       "id": "stripe",
@@ -592,7 +613,8 @@
       "domains": [
         "fintech"
       ],
-      "blurb": "Developer-first payments and financial infrastructure."
+      "blurb": "Developer-first payments and financial infrastructure.",
+      "icon": "stripe"
     }
   ]
 }

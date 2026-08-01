@@ -6,19 +6,14 @@
 <title>TechAtlas — U.S. Tech Companies in 3D</title>
 <style>
   :root{
-    --bg:#FAFBFC; --surface:#FFFFFF; --ink:#12151C; --muted:#5A6473; --faint:#8A95A5;
-    --line:#E5E9EF; --accent:#3B5BFF; --accent-ink:#fff;
-    --shadow:0 1px 2px rgba(16,21,32,.05),0 10px 30px rgba(16,21,32,.10);
+    /* committed dark "mission-control" theme */
+    --bg:#06070E; --surface:#0F1524; --surface-2:#141B2C; --ink:#EAEEF5;
+    --muted:#93A2BC; --faint:#5E6B84; --line:#1E2740; --accent:#6E86FF; --accent-ink:#05060C;
+    --glow:0 0 0 1px rgba(110,134,255,.35),0 0 22px rgba(110,134,255,.35);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 40px rgba(0,0,0,.55);
     --font-ui:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     --font-mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
   }
-  @media (prefers-color-scheme:dark){
-    :root{--bg:#0B0E14;--surface:#12161F;--ink:#EAEEF5;--muted:#95A2B6;--faint:#6C7889;
-      --line:#232B3A;--accent:#6E86FF;--accent-ink:#0B0E14;
-      --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 34px rgba(0,0,0,.5);}
-  }
-  :root[data-theme="light"]{--bg:#FAFBFC;--surface:#FFFFFF;--ink:#12151C;--muted:#5A6473;--faint:#8A95A5;--line:#E5E9EF;--accent:#3B5BFF;--accent-ink:#fff;}
-  :root[data-theme="dark"]{--bg:#0B0E14;--surface:#12161F;--ink:#EAEEF5;--muted:#95A2B6;--faint:#6C7889;--line:#232B3A;--accent:#6E86FF;--accent-ink:#0B0E14;}
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
   body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:16px;line-height:1.55;
@@ -92,7 +87,14 @@
   .p-mono{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-weight:800;font-size:1.1rem;color:#fff}
   .panel h2{margin:14px 0 2px;font-size:1.4rem;letter-spacing:-.02em}
   .panel .hq{font-family:var(--font-mono);font-size:.73rem;color:var(--faint);text-transform:uppercase;letter-spacing:.07em}
-  .panel .blurb{color:var(--muted);font-size:.93rem;margin:14px 0 18px}
+  .panel .blurb{color:var(--muted);font-size:.93rem;margin:14px 0 16px}
+  .statcard{background:var(--surface-2,#141B2C);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:18px}
+  .statcard .stat{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+  .statcard .k{font-size:1.8rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink);letter-spacing:-.02em}
+  .statcard .u{font-family:var(--font-mono);font-size:.72rem;color:var(--faint);text-transform:uppercase;letter-spacing:.08em}
+  .meter{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+  .meter .fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),#9db2ff);
+    width:0;transition:width .5s cubic-bezier(.22,1,.36,1)}
   .panel .lbl{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
   .dchips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px}
   .dchips span{font-size:.77rem;padding:5px 10px;border-radius:999px;color:#fff;font-weight:600}
@@ -164,6 +166,10 @@
         <h2 id="p-name"></h2>
         <div class="hq" id="p-hq"></div>
         <p class="blurb" id="p-blurb"></p>
+        <div class="statcard">
+          <div class="stat"><span class="k" id="p-fpn">0</span><span class="u">of 7 domains</span></div>
+          <div class="meter"><div class="fill" id="p-fpbar"></div></div>
+        </div>
         <div class="lbl">Technology domains</div>
         <div class="dchips" id="p-domains"></div>
         <a class="go" id="p-go" href="#">View company profile →</a>

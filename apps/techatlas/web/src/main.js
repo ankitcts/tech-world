@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { makePatternCanvas } from "./patterns.js";
+import { makeLogoMesh, hasLogo } from "./logos.js";
 
 /* TechAtlas — a plain, highly-interactive 3D field of company logo tiles.
    No hubs, no connectors: every company is an independent, lit, beveled tile
@@ -22,12 +23,14 @@ scene.add(new THREE.AmbientLight(0xffffff, 0.95));
 const key = new THREE.DirectionalLight(0xffffff, 0.75); key.position.set(4, 6, 8); scene.add(key);
 const fill = new THREE.DirectionalLight(0xffffff, 0.3); fill.position.set(-6, -3, -5); scene.add(fill);
 
+const DEFAULT_Z = 20;
 const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-camera.position.set(0, 0, 22);
+camera.position.set(0, 0, DEFAULT_Z);
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; controls.dampingFactor = 0.07; controls.enablePan = false;
-controls.minDistance = 12; controls.maxDistance = 40;
-controls.autoRotate = !REDUCE; controls.autoRotateSpeed = 0.25;
+controls.enableDamping = true; controls.dampingFactor = 0.09; controls.enablePan = false;
+controls.minDistance = 6; controls.maxDistance = 34;
+controls.autoRotate = false; // grid dashboard reads best face-on
+let camAnim = null; // {toPos, toTarget} for click fly-to
 
 const root = new THREE.Group(); scene.add(root);
 
@@ -75,24 +78,33 @@ function addStarfield() {
 
 function build() {
   addStarfield();
+  const cols = 6, rows = Math.ceil(COMPANIES.length / cols);
+  const sX = 2.5, sY = 2.9;
   coNodes = COMPANIES.map((c, i) => {
-    const base = fib(i, COMPANIES.length, 8.4).add(V(rnd(-0.6, 0.6), rnd(-0.6, 0.6), rnd(-0.6, 0.6)));
-    const tex = new THREE.CanvasTexture(makePatternCanvas(c));
-    tex.anisotropy = 4; tex.colorSpace = THREE.SRGBColorSpace;
-    const face = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5, metalness: 0.2, transparent: true });
-    const edge = new THREE.MeshStandardMaterial({ color: new THREE.Color((c.palette && c.palette[0]) || c.color), roughness: 0.4, metalness: 0.3, transparent: true });
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.16), [edge, edge, edge, edge, face, face]);
+    // centered grid of columns and rows; each row centered even if partial
+    const row = Math.floor(i / cols), col = i % cols;
+    const inRow = Math.min(cols, COMPANIES.length - row * cols);
+    const base = V((col - (inRow - 1) / 2) * sX, ((rows - 1) / 2 - row) * sY, rnd(-0.5, 0.5));
+    // Real extruded 3D logo when available; stylized brand tile otherwise.
+    let mesh, mats;
+    const logo = c.icon && hasLogo(c.icon) ? makeLogoMesh(c.icon) : null;
+    if (logo) { mesh = logo.mesh; mats = logo.mats; }
+    else {
+      const tex = new THREE.CanvasTexture(makePatternCanvas(c));
+      tex.anisotropy = 4; tex.colorSpace = THREE.SRGBColorSpace;
+      const face = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5, metalness: 0.2, transparent: true });
+      const edge = new THREE.MeshStandardMaterial({ color: new THREE.Color((c.palette && c.palette[0]) || c.color), roughness: 0.4, metalness: 0.3, transparent: true });
+      mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.16), [edge, edge, edge, edge, face, face]);
+      mats = [face, edge];
+    }
     mesh.position.copy(base); mesh.userData = { type: "co", data: c }; root.add(mesh);
     const lab = labelTexture(c.name, "#ffffff", "rgba(0,0,0,.65)"); // readable on the black space bg
     const nm = new THREE.Sprite(new THREE.SpriteMaterial({ map: lab.tex, transparent: true, depthTest: false }));
     nm.scale.set(0.5 * lab.aspect, 0.5, 1); root.add(nm);
     return {
-      data: c, mesh, label: nm, face, edge, base,
-      // independent motion params
-      drift: { ax: rnd(0.15, 0.4), ay: rnd(0.15, 0.4), az: rnd(0.15, 0.4), px: rnd(0, 6.28), py: rnd(0, 6.28), pz: rnd(0, 6.28), sp: rnd(0.15, 0.35) },
-      spin: rnd(0.15, 0.5) * (Math.random() < 0.5 ? -1 : 1),
-      tilt: rnd(0, 6.28),
-      scale: 0.86, targetScale: 0.86,
+      data: c, mesh, label: nm, mats, base,
+      drift: { px: rnd(0, 6.28), py: rnd(0, 6.28), pz: rnd(0, 6.28), sp: rnd(0.15, 0.35) },
+      tilt: rnd(0, 6.28), scale: 0.92, targetScale: 0.92,
     };
   });
   controls.target.set(0, 0, 0);
@@ -118,9 +130,11 @@ renderer.domElement.addEventListener("pointermove", (e) => {
   hovered = pick(); renderer.domElement.style.cursor = hovered ? "pointer" : "grab";
 });
 renderer.domElement.addEventListener("pointerdown", () => { down = true; moved = false; });
+function flyTo(node) { const p = node.mesh.position; camAnim = { toTarget: p.clone(), toPos: p.clone().add(V(0, 0, 6.2)) }; }
+function resetCam() { camAnim = { toTarget: V(0, 0, 0), toPos: V(0, 0, DEFAULT_Z) }; }
 renderer.domElement.addEventListener("pointerup", () => {
   if (!moved) { const n = pick();
-    if (n) { selected = n; openPanel(n.data); } else { selected = null; closePanel(); } }
+    if (n) { selected = n; openPanel(n.data); flyTo(n); } else { selected = null; closePanel(); resetCam(); } }
   down = false;
 });
 
@@ -133,6 +147,9 @@ function openPanel(c) {
   const p0 = (c.palette && c.palette[0]) || c.color;
   const mono = el("p-mono"); mono.textContent = c.mono; mono.style.background = p0;
   mono.style.color = lum(p0) > 0.7 ? "#111" : "#fff";
+  el("p-fpn").textContent = c.domains.length;
+  const bar = el("p-fpbar"); bar.style.width = "0%";
+  requestAnimationFrame(() => { bar.style.width = `${(c.domains.length / DOMAINS.length) * 100}%`; });
   const dc = el("p-domains"); dc.innerHTML = "";
   c.domains.forEach((id) => { const d = domainById[id]; const s = document.createElement("span"); s.textContent = d.label; s.style.background = d.color; dc.appendChild(s); });
   panel.hidden = false; requestAnimationFrame(() => panel.classList.add("open"));
@@ -169,7 +186,7 @@ function buildA11y() {
 
 /* ---------- loop ---------- */
 function resize() { const r = container.getBoundingClientRect();
-  renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix(); }
+  renderer.setSize(r.width, r.height); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix(); }
 window.addEventListener("resize", resize);
 
 const clock = new THREE.Clock();
@@ -184,26 +201,32 @@ function tick() {
     // opacity: filtered-out or dimmed-by-focus
     let o = vis ? 1 : (anyFilter ? 0.06 : 1);
     if (active && !isActive) o = Math.min(o, 0.14);
-    n.face.opacity = o; n.edge.opacity = o; n.label.material.opacity = Math.min(o, 0.95);
+    n.mats.forEach((m) => { m.opacity = o; }); n.label.material.opacity = Math.min(o, 0.95);
     n.mesh.visible = o > 0.02; n.label.visible = o > 0.02 && (isActive || (!active && vis));
     // motion (independent drift + spin), frozen when focused or reduced-motion
     const d = n.drift;
     const pos = n.base.clone();
-    if (!REDUCE && !isActive) pos.add(V(Math.sin(t * d.sp + d.px) * d.ax, Math.sin(t * d.sp * 0.9 + d.py) * d.ay, Math.sin(t * d.sp * 1.1 + d.pz) * d.az));
+    // gentle float around the grid slot (small amplitude)
+    if (!REDUCE && !isActive) pos.add(V(Math.sin(t * d.sp + d.px) * 0.12, Math.sin(t * d.sp * 0.9 + d.py) * 0.16, Math.sin(t * d.sp * 1.1 + d.pz) * 0.18));
     n.mesh.position.copy(pos);
     n.label.position.copy(pos).add(V(0, 0.66, 0));
     if (isActive) {
-      // face the camera + pop
-      camera.getWorldQuaternion(camQ); n.mesh.quaternion.slerp(camQ, 0.2);
-      n.targetScale = 1.4;
+      camera.getWorldQuaternion(camQ); n.mesh.quaternion.slerp(camQ, 0.25); // square up to camera
+      n.targetScale = 1.5;
     } else {
-      n.targetScale = 0.86;
-      if (!REDUCE) { n.mesh.rotation.y += n.spin * 0.01; n.mesh.rotation.x = Math.sin(t * 0.4 + n.tilt) * 0.22; }
+      n.targetScale = 0.92;
+      // face forward with a soft sway (stays readable, still feels alive)
+      if (!REDUCE) { n.mesh.rotation.y = Math.sin(t * 0.5 + n.tilt) * 0.13; n.mesh.rotation.x = Math.sin(t * 0.4 + n.tilt) * 0.08; }
+      else { n.mesh.rotation.set(0, 0, 0); }
     }
     n.scale += (n.targetScale - n.scale) * 0.18;
     n.mesh.scale.setScalar(n.scale);
   });
-  controls.autoRotate = !REDUCE && !active;
+  if (camAnim) {
+    camera.position.lerp(camAnim.toPos, 0.09);
+    controls.target.lerp(camAnim.toTarget, 0.09);
+    if (camera.position.distanceTo(camAnim.toPos) < 0.06) camAnim = null;
+  }
   controls.update(); renderer.render(scene, camera); requestAnimationFrame(tick);
 }
 

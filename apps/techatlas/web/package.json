@@ -9,6 +9,7 @@
     "preview": "vite preview --port 4173"
   },
   "dependencies": {
+    "simple-icons": "^16.27.1",
     "three": "^0.160.1"
   },
   "devDependencies": {
