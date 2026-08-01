@@ -46,7 +46,8 @@
   @media (max-width:820px){nav.main,.header-cta .btn:not(.primary){display:none}}
 
   main{flex:1;display:flex;flex-direction:column}
-  .stage{position:relative;flex:1;min-height:560px;height:calc(100dvh - 62px);overflow:hidden}
+  .stage{position:relative;flex:1;min-height:560px;height:calc(100dvh - 62px);overflow:hidden;
+    background:radial-gradient(circle at 50% 42%, #0b1120 0%, #05060c 58%, #010104 100%)}
   #scene{position:absolute;inset:0;display:block}
   #scene canvas{display:block;touch-action:none}
   .overlay{position:absolute;inset:0;pointer-events:none}
@@ -59,7 +60,7 @@
   h1 em{font-style:normal;color:var(--accent)}
   .sub{color:var(--muted);font-size:clamp(.92rem,1.6vw,1.02rem);max-width:40ch}
   .hint{position:absolute;right:clamp(16px,4vw,40px);top:clamp(16px,4vh,30px);font-family:var(--font-mono);
-    font-size:.68rem;color:var(--faint);text-align:right;display:flex;flex-direction:column;gap:3px}
+    font-size:.68rem;color:rgba(255,255,255,.45);text-align:right;display:flex;flex-direction:column;gap:3px}
   @media (max-width:680px){.hint{display:none}}
 
   .controls{position:absolute;left:clamp(16px,4vw,40px);right:clamp(16px,4vw,40px);bottom:clamp(16px,4vh,26px);
@@ -78,7 +79,7 @@
     background:color-mix(in srgb,var(--dc) 14%,var(--surface))}
   .chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .spacer{flex:1}
-  .count{font-family:var(--font-mono);font-size:.73rem;color:var(--faint);white-space:nowrap}
+  .count{font-family:var(--font-mono);font-size:.73rem;color:rgba(255,255,255,.6);white-space:nowrap}
 
   .panel{position:absolute;top:0;right:0;height:100%;width:min(360px,88vw);background:var(--surface);
     border-left:1px solid var(--line);box-shadow:var(--shadow);transform:translateX(102%);
@@ -142,11 +143,6 @@
   <section class="stage" aria-label="Interactive 3D map of U.S. tech companies by technology domain">
     <div id="scene"></div>
     <div class="overlay">
-      <div class="head-copy">
-        <div class="eyebrow">U.S. Big Tech · 3D field</div>
-        <h1>Every company that builds<br><em>the future</em>, in one field.</h1>
-        <p class="sub">A weightless field of U.S. tech companies. Drag to orbit, scroll to zoom, hover to focus, click a tile for details.</p>
-      </div>
       <div class="hint" aria-hidden="true">
         <span>drag · orbit</span><span>scroll · zoom</span><span>click · details</span>
       </div>

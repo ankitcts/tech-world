@@ -56,8 +56,25 @@ function labelTexture(text, ink, halo) {
   const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return { tex: t, aspect: c.width / c.height };
 }
 
+function addStarfield() {
+  const n = 1400, pos = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    // distribute on a large shell around the scene for depth + parallax
+    const r = rnd(26, 60), th = rnd(0, Math.PI * 2), ph = Math.acos(rnd(-1, 1));
+    pos[i * 3] = r * Math.sin(ph) * Math.cos(th);
+    pos[i * 3 + 1] = r * Math.sin(ph) * Math.sin(th);
+    pos[i * 3 + 2] = r * Math.cos(ph);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  const stars = new THREE.Points(geo, new THREE.PointsMaterial({
+    color: 0xffffff, size: 0.13, sizeAttenuation: true, transparent: true, opacity: 0.75, depthWrite: false,
+  }));
+  scene.add(stars);
+}
+
 function build() {
-  const ink = cssv("--ink"), bg = cssv("--bg");
+  addStarfield();
   coNodes = COMPANIES.map((c, i) => {
     const base = fib(i, COMPANIES.length, 8.4).add(V(rnd(-0.6, 0.6), rnd(-0.6, 0.6), rnd(-0.6, 0.6)));
     const tex = new THREE.CanvasTexture(makePatternCanvas(c));
@@ -66,7 +83,7 @@ function build() {
     const edge = new THREE.MeshStandardMaterial({ color: new THREE.Color((c.palette && c.palette[0]) || c.color), roughness: 0.4, metalness: 0.3, transparent: true });
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.16), [edge, edge, edge, edge, face, face]);
     mesh.position.copy(base); mesh.userData = { type: "co", data: c }; root.add(mesh);
-    const lab = labelTexture(c.name, ink, bg);
+    const lab = labelTexture(c.name, "#ffffff", "rgba(0,0,0,.65)"); // readable on the black space bg
     const nm = new THREE.Sprite(new THREE.SpriteMaterial({ map: lab.tex, transparent: true, depthTest: false }));
     nm.scale.set(0.5 * lab.aspect, 0.5, 1); root.add(nm);
     return {
@@ -203,9 +220,3 @@ async function boot() {
   }
 }
 boot();
-
-new MutationObserver(() => {
-  const ink = cssv("--ink"), bg = cssv("--bg");
-  coNodes.forEach((n) => { const lab = labelTexture(n.data.name, ink, bg);
-    n.label.material.map.dispose(); n.label.material.map = lab.tex; n.label.material.needsUpdate = true; });
-}).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
