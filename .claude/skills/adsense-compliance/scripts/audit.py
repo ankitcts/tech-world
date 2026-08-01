@@ -30,6 +30,11 @@ SKIP_DIRS = {".git", ".claude", "node_modules", ".venv", "venv", "dist", "build"
              ".next", "out", "__pycache__", ".cache", "coverage", "vendor"}
 TEXT_EXTS = {".html", ".htm", ".js", ".jsx", ".ts", ".tsx", ".vue", ".svelte",
              ".md", ".mdx", ".php", ".astro", ".ejs", ".hbs", ".txt", ".json"}
+# AdSense integration is only detected in real web *code* — never in markdown
+# or plain-text docs, which routinely *mention* AdSense (specs, changelogs,
+# this skill itself) without integrating it. Prevents false "integrated" flags.
+CODE_EXTS = {".html", ".htm", ".js", ".jsx", ".ts", ".tsx", ".vue", ".svelte",
+             ".php", ".astro", ".ejs", ".hbs"}
 MAX_BYTES = 2_000_000  # skip very large files
 
 ADSENSE_SIGNALS = [
@@ -99,7 +104,7 @@ def audit(root: Path) -> tuple[Result, bool]:
         low = read_text(p).lower()
         if not low:
             continue
-        if any(matches(low, s) for s in ADSENSE_SIGNALS):
+        if p.suffix.lower() in CODE_EXTS and any(matches(low, s) for s in ADSENSE_SIGNALS):
             adsense_used = True
             for m in re.findall(r"ca-pub-\d{10,20}", low):
                 pub_ids.add(m.replace("ca-", ""))

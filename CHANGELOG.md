@@ -65,4 +65,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 ### Removed
 ### Fixed
+- adsense-compliance auditor no longer reports "AdSense integrated"
+  from documentation/markdown that merely mentions AdSense; integration is
+  now detected only in real web code files, preventing false pre-push blocks
+  on tooling/docs repos.
+
 ### Security
