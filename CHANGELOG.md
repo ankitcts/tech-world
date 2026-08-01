@@ -31,6 +31,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Global hook wiring (`~/.claude/settings.json`) registering the
   `UserPromptSubmit` doc reminder and the `PreToolUse` AdSense pre-push gate,
   documented for version control in `.claude/hooks/README.md`.
+- Global `security-tester` subagent (`.claude/agents/security-tester.md`) for
+  defensive, first-party website/app security testing (secrets, OWASP Top 10,
+  dependencies, security headers, auth/session), backed by a `PreToolUse`
+  pre-commit gate (`.claude/hooks/security-precommit.sh` + `.py`) that scans
+  staged files and blocks `git commit` on CRITICAL findings (committed secrets
+  or `.env` files) while reporting risky patterns without blocking.
 - Global `architecture-diagrams` subagent (`.claude/agents/architecture-diagrams.md`)
   producing C4-model interactive diagrams + documents (Mermaid source of
   truth; Tier-1 self-contained HTML viewer, Tier-2 React Flow app; build-time
