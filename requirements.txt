@@ -1,0 +1,6 @@
+requests>=2.31
+beautifulsoup4>=4.12
+lxml>=5.0
+# Optional: only needed for --mode dynamic (JS-rendered pages).
+# Chromium is pre-provisioned in Claude Code web environments.
+playwright>=1.44
