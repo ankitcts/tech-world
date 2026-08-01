@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "cd apps/techatlas/web && npm install",
+  "buildCommand": "cd apps/techatlas/web && npm run build",
+  "outputDirectory": "apps/techatlas/web/dist"
+}

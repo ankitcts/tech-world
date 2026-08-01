@@ -43,6 +43,11 @@
       "ticker": "AAPL",
       "mono": "Ap",
       "color": "#111111",
+      "palette": [
+        "#111111",
+        "#A3AAAE"
+      ],
+      "pattern": "wordmark",
       "hq": "Cupertino, CA",
       "domains": [
         "chips",
@@ -56,6 +61,13 @@
       "ticker": "MSFT",
       "mono": "Ms",
       "color": "#0A72C4",
+      "palette": [
+        "#F25022",
+        "#7FBA00",
+        "#00A4EF",
+        "#FFB900"
+      ],
+      "pattern": "quad",
       "hq": "Redmond, WA",
       "domains": [
         "cloud",
@@ -70,6 +82,13 @@
       "ticker": "GOOGL",
       "mono": "Go",
       "color": "#3B7DEC",
+      "palette": [
+        "#4285F4",
+        "#EA4335",
+        "#FBBC05",
+        "#34A853"
+      ],
+      "pattern": "quad",
       "hq": "Mountain View, CA",
       "domains": [
         "ai",
@@ -83,7 +102,12 @@
       "name": "Amazon",
       "ticker": "AMZN",
       "mono": "Az",
-      "color": "#E8930C",
+      "color": "#FF9900",
+      "palette": [
+        "#FF9900",
+        "#232F3E"
+      ],
+      "pattern": "smile",
       "hq": "Seattle, WA",
       "domains": [
         "cloud",
@@ -98,6 +122,12 @@
       "ticker": "META",
       "mono": "Me",
       "color": "#0866FF",
+      "palette": [
+        "#0866FF",
+        "#0A7CFF",
+        "#ffffff"
+      ],
+      "pattern": "orbit",
       "hq": "Menlo Park, CA",
       "domains": [
         "social",
@@ -110,7 +140,13 @@
       "name": "NVIDIA",
       "ticker": "NVDA",
       "mono": "Nv",
-      "color": "#5C9A00",
+      "color": "#76B900",
+      "palette": [
+        "#76B900",
+        "#0B0E14",
+        "#ffffff"
+      ],
+      "pattern": "orbit",
       "hq": "Santa Clara, CA",
       "domains": [
         "chips",
@@ -123,7 +159,12 @@
       "name": "Tesla",
       "ticker": "TSLA",
       "mono": "Te",
-      "color": "#CC1B22",
+      "color": "#CC0000",
+      "palette": [
+        "#CC0000",
+        "#111111"
+      ],
+      "pattern": "chevron",
       "hq": "Austin, TX",
       "domains": [
         "ai",
@@ -136,7 +177,12 @@
       "name": "Netflix",
       "ticker": "NFLX",
       "mono": "Nf",
-      "color": "#D81420",
+      "color": "#E50914",
+      "palette": [
+        "#E50914",
+        "#831010"
+      ],
+      "pattern": "bars",
       "hq": "Los Gatos, CA",
       "domains": [
         "social"
@@ -148,7 +194,12 @@
       "name": "Adobe",
       "ticker": "ADBE",
       "mono": "Ad",
-      "color": "#D8322B",
+      "color": "#FA0F00",
+      "palette": [
+        "#FA0F00",
+        "#2B0808"
+      ],
+      "pattern": "split",
       "hq": "San Jose, CA",
       "domains": [
         "enterprise",
@@ -161,7 +212,12 @@
       "name": "Salesforce",
       "ticker": "CRM",
       "mono": "Sf",
-      "color": "#159AD6",
+      "color": "#00A1E0",
+      "palette": [
+        "#00A1E0",
+        "#ffffff"
+      ],
+      "pattern": "ring",
       "hq": "San Francisco, CA",
       "domains": [
         "enterprise",
@@ -175,6 +231,11 @@
       "ticker": "ORCL",
       "mono": "Or",
       "color": "#C74634",
+      "palette": [
+        "#C74634",
+        "#ffffff"
+      ],
+      "pattern": "wordmark",
       "hq": "Austin, TX",
       "domains": [
         "cloud",
@@ -187,7 +248,12 @@
       "name": "IBM",
       "ticker": "IBM",
       "mono": "Ib",
-      "color": "#2F62C4",
+      "color": "#0530AD",
+      "palette": [
+        "#0530AD",
+        "#ffffff"
+      ],
+      "pattern": "stripes",
       "hq": "Armonk, NY",
       "domains": [
         "cloud",
@@ -201,7 +267,12 @@
       "name": "Intel",
       "ticker": "INTC",
       "mono": "In",
-      "color": "#1A7AC4",
+      "color": "#0071C5",
+      "palette": [
+        "#0071C5",
+        "#00C7FD"
+      ],
+      "pattern": "ring",
       "hq": "Santa Clara, CA",
       "domains": [
         "chips"
@@ -213,7 +284,12 @@
       "name": "AMD",
       "ticker": "AMD",
       "mono": "Am",
-      "color": "#D31A26",
+      "color": "#ED1C24",
+      "palette": [
+        "#ED1C24",
+        "#111111"
+      ],
+      "pattern": "chevron",
       "hq": "Santa Clara, CA",
       "domains": [
         "chips",
@@ -227,6 +303,11 @@
       "ticker": "QCOM",
       "mono": "Qc",
       "color": "#3253DC",
+      "palette": [
+        "#3253DC",
+        "#5E2CA5"
+      ],
+      "pattern": "hex",
       "hq": "San Diego, CA",
       "domains": [
         "chips"
@@ -238,7 +319,12 @@
       "name": "Broadcom",
       "ticker": "AVGO",
       "mono": "Bc",
-      "color": "#B3092A",
+      "color": "#CC092F",
+      "palette": [
+        "#CC092F",
+        "#E4002B"
+      ],
+      "pattern": "split",
       "hq": "Palo Alto, CA",
       "domains": [
         "chips",
@@ -251,7 +337,12 @@
       "name": "Cisco",
       "ticker": "CSCO",
       "mono": "Ci",
-      "color": "#159BD3",
+      "color": "#049FD9",
+      "palette": [
+        "#049FD9",
+        "#ffffff"
+      ],
+      "pattern": "bars",
       "hq": "San Jose, CA",
       "domains": [
         "cloud",
@@ -264,7 +355,13 @@
       "name": "PayPal",
       "ticker": "PYPL",
       "mono": "Pp",
-      "color": "#0A4FA0",
+      "color": "#003087",
+      "palette": [
+        "#003087",
+        "#009CDE",
+        "#ffffff"
+      ],
+      "pattern": "orbit",
       "hq": "San Jose, CA",
       "domains": [
         "fintech"
@@ -276,7 +373,12 @@
       "name": "Block",
       "ticker": "XYZ",
       "mono": "Bk",
-      "color": "#1A1A1A",
+      "color": "#000000",
+      "palette": [
+        "#000000",
+        "#00D632"
+      ],
+      "pattern": "grid",
       "hq": "Oakland, CA",
       "domains": [
         "fintech"
@@ -288,7 +390,12 @@
       "name": "Coinbase",
       "ticker": "COIN",
       "mono": "Cb",
-      "color": "#0A52E0",
+      "color": "#0052FF",
+      "palette": [
+        "#0052FF",
+        "#ffffff"
+      ],
+      "pattern": "ring",
       "hq": "Remote-first",
       "domains": [
         "fintech"
@@ -301,6 +408,11 @@
       "ticker": "V",
       "mono": "Vi",
       "color": "#1A1F71",
+      "palette": [
+        "#1A1F71",
+        "#F7B600"
+      ],
+      "pattern": "split",
       "hq": "San Francisco, CA",
       "domains": [
         "fintech"
@@ -312,7 +424,12 @@
       "name": "Uber",
       "ticker": "UBER",
       "mono": "Ub",
-      "color": "#111111",
+      "color": "#000000",
+      "palette": [
+        "#000000",
+        "#9AA0A6"
+      ],
+      "pattern": "grid",
       "hq": "San Francisco, CA",
       "domains": [
         "commerce",
@@ -325,7 +442,13 @@
       "name": "Airbnb",
       "ticker": "ABNB",
       "mono": "Ab",
-      "color": "#E24E55",
+      "color": "#FF385C",
+      "palette": [
+        "#FF385C",
+        "#ffffff",
+        "#E00B41"
+      ],
+      "pattern": "orbit",
       "hq": "San Francisco, CA",
       "domains": [
         "commerce"
@@ -337,7 +460,12 @@
       "name": "DoorDash",
       "ticker": "DASH",
       "mono": "Dd",
-      "color": "#E8360C",
+      "color": "#FF3008",
+      "palette": [
+        "#FF3008",
+        "#ffffff"
+      ],
+      "pattern": "chevron",
       "hq": "San Francisco, CA",
       "domains": [
         "commerce"
@@ -349,7 +477,12 @@
       "name": "Snowflake",
       "ticker": "SNOW",
       "mono": "Sn",
-      "color": "#1E9FD0",
+      "color": "#29B5E8",
+      "palette": [
+        "#29B5E8",
+        "#ffffff"
+      ],
+      "pattern": "spark",
       "hq": "Bozeman, MT",
       "domains": [
         "cloud",
@@ -362,7 +495,12 @@
       "name": "Databricks",
       "ticker": "\u2014",
       "mono": "Db",
-      "color": "#E23421",
+      "color": "#FF3621",
+      "palette": [
+        "#FF3621",
+        "#FF6A54"
+      ],
+      "pattern": "spark",
       "hq": "San Francisco, CA",
       "domains": [
         "cloud",
@@ -375,7 +513,12 @@
       "name": "ServiceNow",
       "ticker": "NOW",
       "mono": "Sv",
-      "color": "#3AA948",
+      "color": "#62D84E",
+      "palette": [
+        "#62D84E",
+        "#0B3D2E"
+      ],
+      "pattern": "hex",
       "hq": "Santa Clara, CA",
       "domains": [
         "enterprise"
@@ -387,7 +530,12 @@
       "name": "Palantir",
       "ticker": "PLTR",
       "mono": "Pl",
-      "color": "#1B1D22",
+      "color": "#101113",
+      "palette": [
+        "#101113",
+        "#8E9196"
+      ],
+      "pattern": "grid",
       "hq": "Denver, CO",
       "domains": [
         "ai",
@@ -400,7 +548,12 @@
       "name": "OpenAI",
       "ticker": "\u2014",
       "mono": "Oa",
-      "color": "#0E9A78",
+      "color": "#10A37F",
+      "palette": [
+        "#10A37F",
+        "#ffffff"
+      ],
+      "pattern": "spark",
       "hq": "San Francisco, CA",
       "domains": [
         "ai"
@@ -412,7 +565,12 @@
       "name": "Snap",
       "ticker": "SNAP",
       "mono": "Sp",
-      "color": "#C9A400",
+      "color": "#FFFC00",
+      "palette": [
+        "#FFFC00",
+        "#111111"
+      ],
+      "pattern": "orbit",
       "hq": "Santa Monica, CA",
       "domains": [
         "social"
@@ -425,6 +583,11 @@
       "ticker": "\u2014",
       "mono": "St",
       "color": "#635BFF",
+      "palette": [
+        "#635BFF",
+        "#ffffff"
+      ],
+      "pattern": "bars",
       "hq": "South SF, CA",
       "domains": [
         "fintech"
