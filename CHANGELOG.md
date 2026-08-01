@@ -31,6 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Global hook wiring (`~/.claude/settings.json`) registering the
   `UserPromptSubmit` doc reminder and the `PreToolUse` AdSense pre-push gate,
   documented for version control in `.claude/hooks/README.md`.
+- Global `responsive-a11y` subagent (`.claude/agents/responsive-a11y.md`) for
+  responsive layout and WCAG 2.1 AA accessibility compliance, with a
+  dependency-free static checker (`.claude/hooks/responsive-a11y-check.py`)
+  and a `PostToolUse` hook that runs it automatically on every change to a
+  web source file in any project.
 
 ### Changed
 ### Deprecated
