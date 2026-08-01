@@ -1,0 +1,435 @@
+{
+  "domains": [
+    {
+      "id": "ai",
+      "label": "AI & ML",
+      "color": "#7C5CFC"
+    },
+    {
+      "id": "cloud",
+      "label": "Cloud & Infra",
+      "color": "#2F80ED"
+    },
+    {
+      "id": "chips",
+      "label": "Semiconductors",
+      "color": "#E1892B"
+    },
+    {
+      "id": "social",
+      "label": "Social & Media",
+      "color": "#E0518A"
+    },
+    {
+      "id": "commerce",
+      "label": "Commerce",
+      "color": "#2FA16B"
+    },
+    {
+      "id": "fintech",
+      "label": "Fintech",
+      "color": "#12A6A0"
+    },
+    {
+      "id": "enterprise",
+      "label": "Enterprise",
+      "color": "#5566D6"
+    }
+  ],
+  "companies": [
+    {
+      "id": "apple",
+      "name": "Apple",
+      "ticker": "AAPL",
+      "mono": "Ap",
+      "color": "#111111",
+      "hq": "Cupertino, CA",
+      "domains": [
+        "chips",
+        "ai"
+      ],
+      "blurb": "Consumer hardware, Apple-silicon (M-series) and services."
+    },
+    {
+      "id": "microsoft",
+      "name": "Microsoft",
+      "ticker": "MSFT",
+      "mono": "Ms",
+      "color": "#0A72C4",
+      "hq": "Redmond, WA",
+      "domains": [
+        "cloud",
+        "ai",
+        "enterprise"
+      ],
+      "blurb": "Azure cloud, Windows, Office and Copilot."
+    },
+    {
+      "id": "alphabet",
+      "name": "Alphabet",
+      "ticker": "GOOGL",
+      "mono": "Go",
+      "color": "#3B7DEC",
+      "hq": "Mountain View, CA",
+      "domains": [
+        "ai",
+        "cloud",
+        "social"
+      ],
+      "blurb": "Google Search, Cloud, DeepMind/Gemini, YouTube."
+    },
+    {
+      "id": "amazon",
+      "name": "Amazon",
+      "ticker": "AMZN",
+      "mono": "Az",
+      "color": "#E8930C",
+      "hq": "Seattle, WA",
+      "domains": [
+        "cloud",
+        "commerce",
+        "ai"
+      ],
+      "blurb": "AWS cloud leader and the largest U.S. marketplace."
+    },
+    {
+      "id": "meta",
+      "name": "Meta",
+      "ticker": "META",
+      "mono": "Me",
+      "color": "#0866FF",
+      "hq": "Menlo Park, CA",
+      "domains": [
+        "social",
+        "ai"
+      ],
+      "blurb": "Facebook, Instagram, WhatsApp and Llama models."
+    },
+    {
+      "id": "nvidia",
+      "name": "NVIDIA",
+      "ticker": "NVDA",
+      "mono": "Nv",
+      "color": "#5C9A00",
+      "hq": "Santa Clara, CA",
+      "domains": [
+        "chips",
+        "ai"
+      ],
+      "blurb": "GPUs and CUDA \u2014 the compute engine of the AI boom."
+    },
+    {
+      "id": "tesla",
+      "name": "Tesla",
+      "ticker": "TSLA",
+      "mono": "Te",
+      "color": "#CC1B22",
+      "hq": "Austin, TX",
+      "domains": [
+        "ai",
+        "chips"
+      ],
+      "blurb": "EVs, autonomy (FSD) and the Dojo training silicon."
+    },
+    {
+      "id": "netflix",
+      "name": "Netflix",
+      "ticker": "NFLX",
+      "mono": "Nf",
+      "color": "#D81420",
+      "hq": "Los Gatos, CA",
+      "domains": [
+        "social"
+      ],
+      "blurb": "Streaming media and original content at scale."
+    },
+    {
+      "id": "adobe",
+      "name": "Adobe",
+      "ticker": "ADBE",
+      "mono": "Ad",
+      "color": "#D8322B",
+      "hq": "San Jose, CA",
+      "domains": [
+        "enterprise",
+        "ai"
+      ],
+      "blurb": "Creative Cloud, Document Cloud and Firefly AI."
+    },
+    {
+      "id": "salesforce",
+      "name": "Salesforce",
+      "ticker": "CRM",
+      "mono": "Sf",
+      "color": "#159AD6",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "enterprise",
+        "cloud"
+      ],
+      "blurb": "CRM leader; Data Cloud and Einstein AI."
+    },
+    {
+      "id": "oracle",
+      "name": "Oracle",
+      "ticker": "ORCL",
+      "mono": "Or",
+      "color": "#C74634",
+      "hq": "Austin, TX",
+      "domains": [
+        "cloud",
+        "enterprise"
+      ],
+      "blurb": "Databases, OCI cloud and enterprise apps."
+    },
+    {
+      "id": "ibm",
+      "name": "IBM",
+      "ticker": "IBM",
+      "mono": "Ib",
+      "color": "#2F62C4",
+      "hq": "Armonk, NY",
+      "domains": [
+        "cloud",
+        "ai",
+        "enterprise"
+      ],
+      "blurb": "Hybrid cloud (Red Hat), consulting and watsonx."
+    },
+    {
+      "id": "intel",
+      "name": "Intel",
+      "ticker": "INTC",
+      "mono": "In",
+      "color": "#1A7AC4",
+      "hq": "Santa Clara, CA",
+      "domains": [
+        "chips"
+      ],
+      "blurb": "x86 CPUs and a growing U.S. foundry business."
+    },
+    {
+      "id": "amd",
+      "name": "AMD",
+      "ticker": "AMD",
+      "mono": "Am",
+      "color": "#D31A26",
+      "hq": "Santa Clara, CA",
+      "domains": [
+        "chips",
+        "ai"
+      ],
+      "blurb": "Ryzen/EPYC CPUs and Instinct AI accelerators."
+    },
+    {
+      "id": "qualcomm",
+      "name": "Qualcomm",
+      "ticker": "QCOM",
+      "mono": "Qc",
+      "color": "#3253DC",
+      "hq": "San Diego, CA",
+      "domains": [
+        "chips"
+      ],
+      "blurb": "Mobile SoCs, modems and Snapdragon platforms."
+    },
+    {
+      "id": "broadcom",
+      "name": "Broadcom",
+      "ticker": "AVGO",
+      "mono": "Bc",
+      "color": "#B3092A",
+      "hq": "Palo Alto, CA",
+      "domains": [
+        "chips",
+        "enterprise"
+      ],
+      "blurb": "Networking silicon and infra software (VMware)."
+    },
+    {
+      "id": "cisco",
+      "name": "Cisco",
+      "ticker": "CSCO",
+      "mono": "Ci",
+      "color": "#159BD3",
+      "hq": "San Jose, CA",
+      "domains": [
+        "cloud",
+        "chips"
+      ],
+      "blurb": "Networking hardware, security and observability."
+    },
+    {
+      "id": "paypal",
+      "name": "PayPal",
+      "ticker": "PYPL",
+      "mono": "Pp",
+      "color": "#0A4FA0",
+      "hq": "San Jose, CA",
+      "domains": [
+        "fintech"
+      ],
+      "blurb": "Digital payments, checkout and Venmo."
+    },
+    {
+      "id": "block",
+      "name": "Block",
+      "ticker": "XYZ",
+      "mono": "Bk",
+      "color": "#1A1A1A",
+      "hq": "Oakland, CA",
+      "domains": [
+        "fintech"
+      ],
+      "blurb": "Square merchant tools and the Cash App ecosystem."
+    },
+    {
+      "id": "coinbase",
+      "name": "Coinbase",
+      "ticker": "COIN",
+      "mono": "Cb",
+      "color": "#0A52E0",
+      "hq": "Remote-first",
+      "domains": [
+        "fintech"
+      ],
+      "blurb": "Crypto exchange and on-chain financial rails."
+    },
+    {
+      "id": "visa",
+      "name": "Visa",
+      "ticker": "V",
+      "mono": "Vi",
+      "color": "#1A1F71",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "fintech"
+      ],
+      "blurb": "Global card network and payment processing."
+    },
+    {
+      "id": "uber",
+      "name": "Uber",
+      "ticker": "UBER",
+      "mono": "Ub",
+      "color": "#111111",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "commerce",
+        "ai"
+      ],
+      "blurb": "Mobility and delivery marketplaces with routing AI."
+    },
+    {
+      "id": "airbnb",
+      "name": "Airbnb",
+      "ticker": "ABNB",
+      "mono": "Ab",
+      "color": "#E24E55",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "commerce"
+      ],
+      "blurb": "Global marketplace for stays and experiences."
+    },
+    {
+      "id": "doordash",
+      "name": "DoorDash",
+      "ticker": "DASH",
+      "mono": "Dd",
+      "color": "#E8360C",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "commerce"
+      ],
+      "blurb": "Last-mile local delivery logistics platform."
+    },
+    {
+      "id": "snowflake",
+      "name": "Snowflake",
+      "ticker": "SNOW",
+      "mono": "Sn",
+      "color": "#1E9FD0",
+      "hq": "Bozeman, MT",
+      "domains": [
+        "cloud",
+        "enterprise"
+      ],
+      "blurb": "Cloud data warehouse and data-sharing network."
+    },
+    {
+      "id": "databricks",
+      "name": "Databricks",
+      "ticker": "\u2014",
+      "mono": "Db",
+      "color": "#E23421",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "cloud",
+        "ai"
+      ],
+      "blurb": "Lakehouse platform for data engineering and ML."
+    },
+    {
+      "id": "servicenow",
+      "name": "ServiceNow",
+      "ticker": "NOW",
+      "mono": "Sv",
+      "color": "#3AA948",
+      "hq": "Santa Clara, CA",
+      "domains": [
+        "enterprise"
+      ],
+      "blurb": "Enterprise workflow and IT service management."
+    },
+    {
+      "id": "palantir",
+      "name": "Palantir",
+      "ticker": "PLTR",
+      "mono": "Pl",
+      "color": "#1B1D22",
+      "hq": "Denver, CO",
+      "domains": [
+        "ai",
+        "enterprise"
+      ],
+      "blurb": "Data-integration and AI platforms (Foundry, AIP)."
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "ticker": "\u2014",
+      "mono": "Oa",
+      "color": "#0E9A78",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "ai"
+      ],
+      "blurb": "Frontier models \u2014 GPT and the ChatGPT platform."
+    },
+    {
+      "id": "snap",
+      "name": "Snap",
+      "ticker": "SNAP",
+      "mono": "Sp",
+      "color": "#C9A400",
+      "hq": "Santa Monica, CA",
+      "domains": [
+        "social"
+      ],
+      "blurb": "Snapchat and an AR camera platform."
+    },
+    {
+      "id": "stripe",
+      "name": "Stripe",
+      "ticker": "\u2014",
+      "mono": "St",
+      "color": "#635BFF",
+      "hq": "South SF, CA",
+      "domains": [
+        "fintech"
+      ],
+      "blurb": "Developer-first payments and financial infrastructure."
+    }
+  ]
+}
