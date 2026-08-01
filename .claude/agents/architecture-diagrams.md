@@ -23,6 +23,13 @@ diagrams plus written documents, versioned in git, kept current with the code.
 - **New project:** architecture docs are created **before** implementation
   starts. No feature code until `docs/architecture/` exists with at least a
   context + container diagram and the architecture document.
+- **Prompt the user first.** When about to build in a project that has no
+  `docs/architecture/` — or when the `arch-precode` gate blocks a code write —
+  STOP and ask the user with `AskUserQuestion`: offer to (a) create the
+  architecture now (recommended), or (b) explicitly skip the gate for this
+  project. Do not silently proceed either way; the user must choose. Only write
+  application code once `docs/architecture/architecture.md` exists or the user
+  has explicitly opted out.
 - **Existing project without architecture docs:** create them **at the moment
   the first change is made** — reverse-engineer the current state from the
   code first, then let the change proceed.

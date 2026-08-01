@@ -55,6 +55,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   web source file in any project.
 
 ### Changed
+- Architecture-first policy strengthened from a soft nudge to a hard gate:
+  new `PreToolUse` hook `.claude/hooks/arch-precode.sh` blocks writing
+  application source code when a project has no `docs/architecture/`, prompting
+  the user (via the architecture-diagrams agent's AskUserQuestion flow) to
+  create the architecture first or explicitly opt out. Exempts docs, `.claude`,
+  tests, and non-source files.
+
 ### Deprecated
 ### Removed
 ### Fixed
