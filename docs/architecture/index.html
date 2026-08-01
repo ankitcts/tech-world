@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tech-world — Interactive Architecture</title>
+<style>
+  :root{
+    --bg:#f6f8fa; --panel:#ffffff; --ink:#1f2328; --muted:#57606a;
+    --accent:#0969da; --node:#dbeafe; --node-edge:#1d4ed8; --ext:#fde9c8;
+    --ext-edge:#b45309; --line:#d0d7de;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0d1117; --panel:#161b22; --ink:#e6edf3; --muted:#8d96a0;
+      --accent:#4493f8; --node:#12335f; --node-edge:#4493f8; --ext:#3d2c12;
+      --ext-edge:#d29922; --line:#30363d; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:var(--bg);color:var(--ink);font-size:1rem;line-height:1.5}
+  header{padding:1rem 1.25rem;border-bottom:1px solid var(--line)}
+  h1{margin:0;font-size:1.25rem}
+  .sub{color:var(--muted);font-size:.9rem}
+  .tabs{display:flex;gap:.5rem;padding:.75rem 1.25rem;flex-wrap:wrap}
+  .tabs button{font:inherit;padding:.45rem .9rem;border-radius:.5rem;
+    border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+  .tabs button[aria-selected="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .tabs button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .layout{display:flex;flex-wrap:wrap;gap:1rem;padding:0 1.25rem 1.25rem}
+  .stage{flex:1 1 60%;min-width:min(100%,20rem);background:var(--panel);
+    border:1px solid var(--line);border-radius:.75rem;overflow:hidden;position:relative}
+  svg{display:block;width:100%;height:auto;max-height:70vh;touch-action:none;cursor:grab}
+  .zoombar{position:absolute;top:.5rem;right:.5rem;display:flex;gap:.25rem}
+  .zoombar button{font:inherit;width:2.25rem;height:2.25rem;border-radius:.5rem;
+    border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+  .zoombar button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  aside{flex:1 1 30%;min-width:min(100%,18rem);background:var(--panel);
+    border:1px solid var(--line);border-radius:.75rem;padding:1rem}
+  aside h2{margin:0 0 .25rem;font-size:1.05rem}
+  aside .tech{color:var(--accent);font-size:.85rem;margin-bottom:.5rem}
+  aside p{margin:.25rem 0;color:var(--muted);font-size:.95rem}
+  .audio{padding:.75rem 1rem;border-top:1px solid var(--line);margin-top:.75rem}
+  .audio h3{margin:0 0 .5rem;font-size:.95rem}
+  audio{width:100%}
+  details{margin-top:.5rem;font-size:.9rem;color:var(--muted)}
+  g.node{cursor:pointer}
+  g.node rect{fill:var(--node);stroke:var(--node-edge);stroke-width:1.5;rx:10}
+  g.node.ext rect{fill:var(--ext);stroke:var(--ext-edge)}
+  g.node text{fill:var(--ink);font-size:13px;pointer-events:none}
+  g.node .t2{fill:var(--muted);font-size:11px}
+  g.node:focus-visible{outline:none}
+  g.node:focus-visible rect,g.node.sel rect{stroke-width:3.5}
+  path.edge{stroke:var(--muted);stroke-width:1.4;fill:none;marker-end:url(#arr)}
+  text.elabel{fill:var(--muted);font-size:10.5px}
+</style>
+</head>
+<body>
+<header>
+  <h1>tech-world — Interactive Architecture</h1>
+  <p class="sub">C4 model · click a node for details · drag to pan · wheel or buttons to zoom · Tab + Enter for keyboard</p>
+</header>
+
+<div class="tabs" role="tablist" aria-label="C4 diagram levels">
+  <button role="tab" id="tab-context" aria-selected="true" aria-controls="view-context">1 · Context</button>
+  <button role="tab" id="tab-container" aria-selected="false" aria-controls="view-container">2 · Containers</button>
+</div>
+
+<main class="layout">
+  <div class="stage">
+    <div class="zoombar">
+      <button id="zin" aria-label="Zoom in">+</button>
+      <button id="zout" aria-label="Zoom out">−</button>
+      <button id="zfit" aria-label="Reset view">⤢</button>
+    </div>
+
+    <svg id="view-context" viewBox="0 0 760 520" role="group" aria-label="C4 context diagram">
+      <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 z" fill="currentColor" opacity=".65"/></marker></defs>
+      <path class="edge" d="M380,95 L380,150"/>
+      <text class="elabel" x="390" y="128">develops with / invokes</text>
+      <path class="edge" d="M300,230 L150,300"/><text class="elabel" x="120" y="285">scrapes</text>
+      <path class="edge" d="M380,240 L380,300"/><text class="elabel" x="390" y="278">all data via</text>
+      <path class="edge" d="M460,230 L610,300"/><text class="elabel" x="560" y="285">gated push</text>
+      <path class="edge" d="M340,240 L250,390"/><text class="elabel" x="200" y="360">narration (build-time)</text>
+      <g class="node ext" tabindex="0" role="button" data-id="dev" aria-label="Developer, external actor">
+        <rect x="300" y="35" width="160" height="60"/>
+        <text x="380" y="60" text-anchor="middle">Developer</text>
+        <text x="380" y="78" text-anchor="middle" class="t2">via Claude Code</text></g>
+      <g class="node" tabindex="0" role="button" data-id="tw" aria-label="tech-world system">
+        <rect x="290" y="150" width="180" height="90"/>
+        <text x="380" y="182" text-anchor="middle">tech-world</text>
+        <text x="380" y="200" text-anchor="middle" class="t2">global Claude tooling repo</text>
+        <text x="380" y="216" text-anchor="middle" class="t2">agents · skills · hooks · scraper</text></g>
+      <g class="node ext" tabindex="0" role="button" data-id="web" aria-label="Target websites and APIs, external">
+        <rect x="40" y="300" width="180" height="64"/>
+        <text x="130" y="326" text-anchor="middle">Websites &amp; APIs</text>
+        <text x="130" y="344" text-anchor="middle" class="t2">scraped data sources</text></g>
+      <g class="node ext" tabindex="0" role="button" data-id="mongo" aria-label="MongoDB, external datastore">
+        <rect x="290" y="300" width="180" height="64"/>
+        <text x="380" y="326" text-anchor="middle">MongoDB</text>
+        <text x="380" y="344" text-anchor="middle" class="t2">mandated datastore</text></g>
+      <g class="node ext" tabindex="0" role="button" data-id="gh" aria-label="GitHub, external">
+        <rect x="540" y="300" width="180" height="64"/>
+        <text x="630" y="326" text-anchor="middle">GitHub</text>
+        <text x="630" y="344" text-anchor="middle" class="t2">hosting · PRs</text></g>
+      <g class="node ext" tabindex="0" role="button" data-id="el" aria-label="ElevenLabs API, external">
+        <rect x="150" y="400" width="190" height="64"/>
+        <text x="245" y="426" text-anchor="middle">ElevenLabs API</text>
+        <text x="245" y="444" text-anchor="middle" class="t2">audio narration (TTS)</text></g>
+    </svg>
+
+    <svg id="view-container" viewBox="0 0 760 520" role="group" aria-label="C4 container diagram" hidden>
+      <path class="edge" d="M180,160 L180,220"/><text class="elabel" x="190" y="196">drives</text>
+      <path class="edge" d="M480,160 L300,110"/><text class="elabel" x="360" y="120">gate workflows</text>
+      <path class="edge" d="M560,220 L560,160"/><text class="elabel" x="568" y="196">define policies</text>
+      <path class="edge" d="M260,340 L360,395"/><text class="elabel" x="255" y="380">recorded in</text>
+      <path class="edge" d="M560,284 L470,395"/><text class="elabel" x="530" y="350">maintains</text>
+      <g class="node" tabindex="0" role="button" data-id="agents" aria-label="Agents container">
+        <rect x="90" y="80" width="200" height="80"/>
+        <text x="190" y="110" text-anchor="middle">.claude/agents/</text>
+        <text x="190" y="128" text-anchor="middle" class="t2">web-scraper · threed-frontend</text>
+        <text x="190" y="144" text-anchor="middle" class="t2">responsive-a11y · architecture</text></g>
+      <g class="node" tabindex="0" role="button" data-id="hooks" aria-label="Hooks container">
+        <rect x="460" y="80" width="210" height="80"/>
+        <text x="565" y="110" text-anchor="middle">.claude/hooks/</text>
+        <text x="565" y="128" text-anchor="middle" class="t2">doc-reminder · adsense gate</text>
+        <text x="565" y="144" text-anchor="middle" class="t2">a11y on-change · arch gate</text></g>
+      <g class="node" tabindex="0" role="button" data-id="scraper" aria-label="Scraper container">
+        <rect x="80" y="220" width="200" height="80"/>
+        <text x="180" y="250" text-anchor="middle">scraper/</text>
+        <text x="180" y="268" text-anchor="middle" class="t2">Python pkg + CLI</text>
+        <text x="180" y="284" text-anchor="middle" class="t2">requests · bs4 · Playwright</text></g>
+      <g class="node" tabindex="0" role="button" data-id="skills" aria-label="Skills container">
+        <rect x="460" y="220" width="210" height="80"/>
+        <text x="565" y="250" text-anchor="middle">.claude/skills/</text>
+        <text x="565" y="268" text-anchor="middle" class="t2">data-management · living-docs</text>
+        <text x="565" y="284" text-anchor="middle" class="t2">adsense-compliance</text></g>
+      <g class="node" tabindex="0" role="button" data-id="docs" aria-label="Documentation container">
+        <rect x="310" y="395" width="220" height="70"/>
+        <text x="420" y="424" text-anchor="middle">CHANGELOG + docs/</text>
+        <text x="420" y="442" text-anchor="middle" class="t2">living docs · releases · architecture</text></g>
+    </svg>
+  </div>
+
+  <aside aria-live="polite">
+    <h2 id="d-name">Select a node</h2>
+    <div class="tech" id="d-tech"></div>
+    <p id="d-desc">Click or focus any element in the diagram and press Enter to see its responsibility, technology, and links.</p>
+    <div class="audio">
+      <h3>🔊 Audio walkthrough</h3>
+      <audio id="narration" controls preload="none" aria-label="Architecture narration audio">
+        <source id="narration-src" src="audio/context.mp3" type="audio/mpeg">
+      </audio>
+      <details>
+        <summary>Transcript</summary>
+        <p id="transcript">tech-world is a global tooling repository for Claude Code.
+        A developer works through Claude Code, which loads reusable agents, skills,
+        and hooks from this repo. The scraping toolkit collects data from external
+        websites and APIs; the data-management policy routes every piece of
+        application data into MongoDB; pushes to GitHub pass through an AdSense
+        compliance gate; and ElevenLabs generates this narration at build time.
+        Switch to the Containers tab to zoom one level deeper.</p>
+      </details>
+    </div>
+  </aside>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var DETAILS = {
+    dev:{n:"Developer",t:"Human · Claude Code",d:"Builds features via Claude Code; every interaction passes through the globally installed hooks and policies."},
+    tw:{n:"tech-world",t:"Git repository",d:"Source of truth for global agents, skills, hooks, and the scraper toolkit; installed to ~/.claude for all projects."},
+    web:{n:"Websites & APIs",t:"External systems",d:"Scraped by the web-scraper agent via static HTTP, headless Chromium, or JSON/XML API calls."},
+    mongo:{n:"MongoDB",t:"External datastore",d:"The data-management skill mandates all application data lives here — env-configured, repository pattern, nothing hardcoded."},
+    gh:{n:"GitHub",t:"External service",d:"Hosts the repo. git push is intercepted by the AdSense compliance gate before it reaches here."},
+    el:{n:"ElevenLabs API",t:"External TTS service",d:"Generates the audio walkthroughs at build time using ELEVENLABS_API_KEY from the environment; never called from the browser."},
+    agents:{n:".claude/agents/",t:"Markdown agent definitions",d:"web-scraper, threed-frontend, responsive-a11y, architecture-diagrams — reusable personas invoked on demand."},
+    skills:{n:".claude/skills/",t:"SKILL.md + scripts",d:"data-management (MongoDB-only), living-docs (changelog/releases), adsense-compliance (policy audit)."},
+    hooks:{n:".claude/hooks/",t:"Bash + Python",d:"Automatic enforcement: doc reminders on each prompt, a11y checks on each web-file edit, AdSense gate on push, architecture-first gate."},
+    scraper:{n:"scraper/",t:"Python 3.11 package",d:"Fetchers (static/dynamic/api) with retries, extractors (CSS/tables/links/JSON-path), serializers (JSON/CSV/text), python -m scraper CLI."},
+    docs:{n:"CHANGELOG + docs/",t:"Markdown",d:"Living record: Keep-a-Changelog format, SemVer releases in docs/releases/, this architecture document."}
+  };
+  var name=document.getElementById("d-name"), tech=document.getElementById("d-tech"),
+      desc=document.getElementById("d-desc"), sel=null;
+  function show(id,node){
+    var d=DETAILS[id]; if(!d) return;
+    name.textContent=d.n; tech.textContent=d.t; desc.textContent=d.d;
+    if(sel) sel.classList.remove("sel");
+    sel=node; node.classList.add("sel");
+  }
+  document.querySelectorAll("g.node").forEach(function(n){
+    n.addEventListener("click",function(){show(n.dataset.id,n);});
+    n.addEventListener("keydown",function(e){
+      if(e.key==="Enter"||e.key===" "){e.preventDefault();show(n.dataset.id,n);}
+    });
+  });
+
+  // Tabs
+  var tabs={ "tab-context":"view-context", "tab-container":"view-container" };
+  Object.keys(tabs).forEach(function(tid){
+    document.getElementById(tid).addEventListener("click",function(){
+      Object.keys(tabs).forEach(function(t){
+        var on = t===tid;
+        document.getElementById(t).setAttribute("aria-selected",on?"true":"false");
+        document.getElementById(tabs[t]).hidden=!on;
+      });
+      var src=document.getElementById("narration-src");
+      var audio=document.getElementById("narration");
+      src.src = tid==="tab-context" ? "audio/context.mp3" : "audio/container.mp3";
+      audio.load();
+    });
+  });
+
+  // Pan & zoom on the visible SVG (viewBox-based).
+  function activeSvg(){return document.querySelector("svg:not([hidden])");}
+  var base=[0,0,760,520];
+  function getVB(s){return s.getAttribute("viewBox").split(/\s+/).map(Number);}
+  function setVB(s,v){s.setAttribute("viewBox",v.join(" "));}
+  function zoom(f){
+    var s=activeSvg(),v=getVB(s),cx=v[0]+v[2]/2,cy=v[1]+v[3]/2,
+        w=Math.min(3000,Math.max(150,v[2]*f)),h=w*(base[3]/base[2]);
+    setVB(s,[cx-w/2,cy-h/2,w,h]);
+  }
+  document.getElementById("zin").addEventListener("click",function(){zoom(0.8);});
+  document.getElementById("zout").addEventListener("click",function(){zoom(1.25);});
+  document.getElementById("zfit").addEventListener("click",function(){setVB(activeSvg(),base);});
+  document.querySelectorAll("svg").forEach(function(s){
+    s.addEventListener("wheel",function(e){e.preventDefault();zoom(e.deltaY>0?1.1:0.9);},{passive:false});
+    var drag=null;
+    s.addEventListener("pointerdown",function(e){
+      if(e.target.closest("g.node"))return;
+      drag={x:e.clientX,y:e.clientY,v:getVB(s)}; s.setPointerCapture(e.pointerId);
+    });
+    s.addEventListener("pointermove",function(e){
+      if(!drag)return;
+      var r=s.getBoundingClientRect(),k=drag.v[2]/r.width;
+      setVB(s,[drag.v[0]-(e.clientX-drag.x)*k,drag.v[1]-(e.clientY-drag.y)*k,drag.v[2],drag.v[3]]);
+    });
+    ["pointerup","pointercancel"].forEach(function(ev){
+      s.addEventListener(ev,function(){drag=null;});
+    });
+  });
+
+  // Hide the audio block gracefully if no MP3 has been generated yet.
+  document.getElementById("narration").addEventListener("error",function(){},true);
+})();
+</script>
+</body>
+</html>

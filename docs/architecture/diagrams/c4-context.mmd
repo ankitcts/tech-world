@@ -1,0 +1,13 @@
+flowchart TB
+    dev(["Developer<br/>(via Claude Code)"])
+    tw["tech-world<br/>Global Claude tooling repo<br/>[agents · skills · hooks · scraper]"]
+    web[("Target websites & APIs<br/>[scraped data sources]")]
+    mongo[("MongoDB<br/>[mandated datastore<br/>for all app data]")]
+    gh[("GitHub<br/>[repo hosting, PRs]")]
+    el[("ElevenLabs API<br/>[architecture audio narration]")]
+
+    dev -- "develops with / invokes agents & skills" --> tw
+    tw -- "scrapes (static/dynamic/api)" --> web
+    tw -- "enforces all data through" --> mongo
+    tw -- "pushes via gated git push" --> gh
+    tw -- "generates narration MP3s (build-time,<br/>ELEVENLABS_API_KEY)" --> el

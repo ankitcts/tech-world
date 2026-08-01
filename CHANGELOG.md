@@ -31,6 +31,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Global hook wiring (`~/.claude/settings.json`) registering the
   `UserPromptSubmit` doc reminder and the `PreToolUse` AdSense pre-push gate,
   documented for version control in `.claude/hooks/README.md`.
+- Global `architecture-diagrams` subagent (`.claude/agents/architecture-diagrams.md`)
+  producing C4-model interactive diagrams + documents (Mermaid source of
+  truth; Tier-1 self-contained HTML viewer, Tier-2 React Flow app; build-time
+  ElevenLabs audio narration keyed by `ELEVENLABS_API_KEY`), with an
+  architecture-first `UserPromptSubmit` gate (`.claude/hooks/arch-gate.sh`)
+  requiring architecture docs before new projects start or when changing an
+  existing project that lacks them.
+- `docs/architecture/` for this repo (dogfooding): C4 context + container
+  Mermaid diagrams, written architecture document, interactive viewer
+  (verified: keyboard/a11y clean, no 320px overflow), narration transcripts,
+  and an ElevenLabs generation script.
 - Global `responsive-a11y` subagent (`.claude/agents/responsive-a11y.md`) for
   responsive layout and WCAG 2.1 AA accessibility compliance, with a
   dependency-free static checker (`.claude/hooks/responsive-a11y-check.py`)
