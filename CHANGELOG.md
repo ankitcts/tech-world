@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- TechAtlas daily company-data agent — foundations + deployment plan:
+  - `apps/techatlas/pipeline/tiers.py` — employee-count "horizon" tiers
+    (`< 100` … `300,000+` plus `unknown`), with `classify_tier()` that assigns a
+    band only from a verified headcount and never guesses unverifiable values.
+  - `apps/techatlas/pipeline/sic.py` — industry domains taken verbatim from
+    SEC's own `sicDescription` on each real record (no hand-picked catalog); the
+    domain set is exactly the industries present in the fetched data ("all
+    available domains"), with deterministic per-domain colors.
+  - `api/companies.py` — Vercel Python serverless read endpoint serving
+    companies + domains live from MongoDB (CDN-cached), with a curated-seed
+    fallback so the frontend never breaks.
+  - `docs/deploy/daily-agent.md` — end-to-end deployment plan for running the
+    agent daily on Vercel Cron: SEC EDGAR authoritative spine, 10-K-only
+    employee counts with per-field provenance, dynamic SIC domains, a RAG
+    enrichment stage over SEC filings (MongoDB Atlas Vector Search, cited
+    answers), env-driven secrets, and incremental batching for scale.
+  - Offline unit tests for the tier boundaries and SIC/domain mapping.
 - MIT `LICENSE`.
 - Global `web-scraper` subagent (`.claude/agents/web-scraper.md`) for scraping
   static HTML, JS-rendered pages, and JSON/XML APIs.
