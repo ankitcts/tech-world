@@ -7,7 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- TechAtlas web app: replaced the 3D WebGL constellation with a simple,
+  fast landing page — **Netflix-style rows of company logos, one row per
+  domain, auto-scrolling slowly** (pause on hover; static + swipeable under
+  `prefers-reduced-motion`). Clicking a logo opens the company's detail in a
+  **new tab** via a deep-linkable `?company=<id>` URL. The view is fully
+  data-driven and reads `/api/companies` (live from MongoDB) with a fallback to
+  the committed `companies.json`. Dropping Three.js cut the JS bundle from
+  ~hundreds of KB to ~30 KB.
+
 ### Added
+- Company detail page **Leadership & board** section (CEO, CTO, other executive
+  officers, directors) — rendered from provenance-backed records sourced from
+  **SEC filings** (Forms 3/4/5 + DEF 14A), each entry linking to its source.
+  When not yet ingested it shows an explicit "sourced from filings" state rather
+  than any unverified names.
 - TechAtlas daily company-data agent — foundations + deployment plan:
   - `apps/techatlas/pipeline/tiers.py` — employee-count "horizon" tiers
     (`< 100` … `300,000+` plus `unknown`), with `classify_tier()` that assigns a

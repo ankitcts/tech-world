@@ -1,245 +1,203 @@
-import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { makePatternCanvas } from "./patterns.js";
-import { makeLogoMesh, hasLogo } from "./logos.js";
+/* TechAtlas landing page — Netflix-style logo rows + a per-company detail tab.
 
-/* TechAtlas — a plain, highly-interactive 3D field of company logo tiles.
-   No hubs, no connectors: every company is an independent, lit, beveled tile
-   that drifts and slowly spins. Hover to focus, click for details, filter by
-   domain or search. Data comes from companies.json (exported from MongoDB). */
+   The view is fully data-driven: no company data is hardcoded here. Data comes
+   from /api/companies (live from MongoDB) and falls back to the committed
+   ./companies.json. Domains, employee tiers, and leadership all render from
+   whatever the data provides — nothing invented.
 
-const REDUCE = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
-const el = (id) => document.getElementById(id);
-const cssv = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+   - Home: one slowly auto-scrolling row of logos per domain (pause on hover;
+     static + swipeable when the visitor prefers reduced motion).
+   - Click a logo: opens ?company=<id> in a NEW TAB — a deep-linkable detail
+     page with the company's domains, employee tier, and leadership/board
+     (sourced from SEC filings, with citations; unverified data is never shown). */
 
-const scene = new THREE.Scene();
-const container = el("scene");
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-container.appendChild(renderer.domElement);
+import {
+  siApple, siGoogle, siMeta, siNvidia, siTesla, siNetflix, siIntel, siAmd,
+  siQualcomm, siBroadcom, siCisco, siPaypal, siCoinbase, siVisa, siUber,
+  siAirbnb, siDoordash, siSnowflake, siDatabricks, siPalantir, siSnapchat, siStripe,
+} from "simple-icons";
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.95));
-const key = new THREE.DirectionalLight(0xffffff, 0.75); key.position.set(4, 6, 8); scene.add(key);
-const fill = new THREE.DirectionalLight(0xffffff, 0.3); fill.position.set(-6, -3, -5); scene.add(fill);
+const ICONS = {};
+[siApple, siGoogle, siMeta, siNvidia, siTesla, siNetflix, siIntel, siAmd,
+ siQualcomm, siBroadcom, siCisco, siPaypal, siCoinbase, siVisa, siUber,
+ siAirbnb, siDoordash, siSnowflake, siDatabricks, siPalantir, siSnapchat, siStripe]
+  .forEach((i) => { ICONS[i.slug] = i; });
 
-const DEFAULT_Z = 20;
-const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-camera.position.set(0, 0, DEFAULT_Z);
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; controls.dampingFactor = 0.09; controls.enablePan = false;
-controls.minDistance = 6; controls.maxDistance = 34;
-controls.autoRotate = false; // grid dashboard reads best face-on
-let camAnim = null; // {toPos, toTarget} for click fly-to
+const app = document.getElementById("app");
+let DOMAIN_BY_ID = {};
 
-const root = new THREE.Group(); scene.add(root);
+/* ---------- helpers ---------- */
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
+  (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
-let DOMAINS = [], COMPANIES = [], domainById = {}, coNodes = [];
-let hovered = null, selected = null, activeDomains = new Set(), query = "";
-const raycaster = new THREE.Raycaster(); const pointer = new THREE.Vector2();
-const V = (x, y, z) => new THREE.Vector3(x, y, z);
-const lum = (hex) => { const m = hex.replace("#", ""); return (0.299 * parseInt(m.substr(0, 2), 16) + 0.587 * parseInt(m.substr(2, 2), 16) + 0.114 * parseInt(m.substr(4, 2), 16)) / 255; };
-const rnd = (a, b) => a + Math.random() * (b - a);
+function hashHue(str) { let h = 0; for (const ch of String(str)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % 360; }
+function fallbackColor(name) { return `hsl(${hashHue(name)} 44% 30%)`; }
+function lum(hex) {
+  const m = hex.replace("#", ""); if (m.length < 6) return 0.3;
+  return (0.299 * parseInt(m.slice(0, 2), 16) + 0.587 * parseInt(m.slice(2, 4), 16)
+    + 0.114 * parseInt(m.slice(4, 6), 16)) / 255;
+}
+const ink = (bg) => (bg.startsWith("#") && lum(bg) > 0.62 ? "#0B0D12" : "#ffffff");
+function initials(c) {
+  if (c.mono) return c.mono;
+  const w = String(c.name).trim().split(/\s+/).filter(Boolean);
+  return (((w[0] || "")[0] || "") + ((w[1] || "")[0] || "")).toUpperCase() || "•";
+}
+const tileBg = (c) => c.color || fallbackColor(c.name);
 
-function fib(i, n, R) {
-  const y = 1 - (i / (n - 1)) * 2, r = Math.sqrt(1 - y * y), phi = i * Math.PI * (3 - Math.sqrt(5));
-  return V(Math.cos(phi) * r, y, Math.sin(phi) * r).multiplyScalar(R);
+function logoInner(c) {
+  const fg = ink(tileBg(c));
+  const icon = c.icon && ICONS[c.icon];
+  if (icon) return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="${fg}"><path d="${esc(icon.path)}"/></svg>`;
+  return `<span class="mono" style="color:${fg}">${esc(initials(c))}</span>`;
 }
 
-function labelTexture(text, ink, halo) {
-  const f = 34, pad = 10;
-  const m = document.createElement("canvas").getContext("2d");
-  m.font = `600 ${f}px system-ui,sans-serif`;
-  const w = Math.ceil(m.measureText(text).width) + pad * 2;
-  const c = document.createElement("canvas"); c.width = w; c.height = f + pad * 2;
-  const g = c.getContext("2d");
-  g.font = `600 ${f}px system-ui,sans-serif`; g.textAlign = "center"; g.textBaseline = "middle";
-  g.lineWidth = 5; g.lineJoin = "round"; g.strokeStyle = halo; g.strokeText(text, c.width / 2, c.height / 2);
-  g.fillStyle = ink; g.fillText(text, c.width / 2, c.height / 2);
-  const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return { tex: t, aspect: c.width / c.height };
+function card(c) {
+  return `<a class="card" href="?company=${encodeURIComponent(c.id)}" target="_blank" rel="noopener"
+             aria-label="${esc(c.name)} — open details in a new tab">
+    <span class="tile" style="background:${esc(tileBg(c))}">${logoInner(c)}</span>
+    <span class="name">${esc(c.name)}</span>
+    ${c.ticker ? `<span class="tkr">${esc(c.ticker)}</span>` : ""}
+  </a>`;
 }
 
-function addStarfield() {
-  const n = 1400, pos = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) {
-    // distribute on a large shell around the scene for depth + parallax
-    const r = rnd(26, 60), th = rnd(0, Math.PI * 2), ph = Math.acos(rnd(-1, 1));
-    pos[i * 3] = r * Math.sin(ph) * Math.cos(th);
-    pos[i * 3 + 1] = r * Math.sin(ph) * Math.sin(th);
-    pos[i * 3 + 2] = r * Math.cos(ph);
+function rail(companies, index) {
+  // Repeat short lists so the marquee fills the width, then duplicate the whole
+  // sequence once so translateX(-50%) loops seamlessly.
+  let list = companies.slice();
+  while (list.length && list.length < 10) list = list.concat(companies);
+  const half = list.map(card).join("");
+  const dir = index % 2 ? "rev" : "fwd";
+  const dur = 52 + (index % 3) * 20;
+  return `<div class="rail" data-dir="${dir}" style="--dur:${dur}s">
+    <div class="track">${half}${half}</div>
+  </div>`;
+}
+
+/* ---------- home ---------- */
+function renderHome(data) {
+  document.title = "TechAtlas — U.S. Companies by Domain";
+  const rows = data.domains.map((d, i) => {
+    const companies = data.companies.filter((c) => (c.domains || []).includes(d.id));
+    if (!companies.length) return "";
+    return `<section class="row">
+      <div class="row-head">
+        <h2><span class="dot" style="--dc:${esc(d.color || "var(--accent)")}"></span>${esc(d.label)}</h2>
+        <span class="n">${companies.length}</span>
+      </div>
+      ${rail(companies, i)}
+    </section>`;
+  }).join("");
+
+  app.innerHTML = `
+    <section class="hero">
+      <div class="eyebrow">U.S. companies · by domain</div>
+      <h1>The companies shaping <em>U.S. technology</em>.</h1>
+      <p class="sub">Browse by industry domain. Pick a company to see its domains, employee
+      tier, and leadership — all sourced from authoritative filings.</p>
+    </section>
+    <div class="rows">${rows || `<p class="empty">No companies to show yet.</p>`}</div>`;
+}
+
+/* ---------- detail (new tab) ---------- */
+function domainChips(c) {
+  const spans = (c.domains || []).map((id) => {
+    const d = DOMAIN_BY_ID[id];
+    return d ? `<span style="background:${esc(d.color || "var(--accent)")}">${esc(d.label)}</span>` : "";
+  }).join("");
+  return spans ? `<div class="dchips">${spans}</div>` : "";
+}
+
+function leadershipSection(c) {
+  const led = Array.isArray(c.leadership) ? c.leadership : [];
+  if (led.length) {
+    const cards = led.map((p) => `<div class="leader">
+      <div class="nm">${esc(p.name)}</div>
+      <div class="ti">${esc(p.title || "")}</div>
+      ${p.role_type ? `<span class="rl">${esc(p.role_type)}</span>` : ""}
+      ${p.source_url ? `<a class="cite" href="${esc(p.source_url)}" target="_blank" rel="noopener">SEC filing${p.as_of ? ` · ${esc(p.as_of)}` : ""} ↗</a>` : ""}
+    </div>`).join("");
+    return `<section class="section">
+      <h3>Leadership &amp; board</h3>
+      <p class="note">From SEC filings — DEF 14A proxy · Forms 3/4/5. Each entry links to its source.</p>
+      <div class="leaders">${cards}</div>
+    </section>`;
   }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-  const stars = new THREE.Points(geo, new THREE.PointsMaterial({
-    color: 0xffffff, size: 0.13, sizeAttenuation: true, transparent: true, opacity: 0.75, depthWrite: false,
-  }));
-  scene.add(stars);
+  return `<section class="section">
+    <h3>Leadership &amp; board</h3>
+    <div class="pending"><b>Not yet ingested.</b> The CEO, CTO, other executive officers and the
+    board of directors are drawn from this company's <b>SEC filings</b> — DEF 14A proxy statements
+    (full board + officers) and Forms 3/4/5 (officer/director records with titles) — each with a link
+    to its source. They appear here once the filings pipeline has processed this company.
+    Unverified names are never shown.
+    <div class="how">source: SEC EDGAR · DEF 14A / Forms 3,4,5</div></div>
+  </section>`;
 }
 
-function build() {
-  addStarfield();
-  const cols = 6, rows = Math.ceil(COMPANIES.length / cols);
-  const sX = 2.5, sY = 2.9;
-  coNodes = COMPANIES.map((c, i) => {
-    // centered grid of columns and rows; each row centered even if partial
-    const row = Math.floor(i / cols), col = i % cols;
-    const inRow = Math.min(cols, COMPANIES.length - row * cols);
-    const base = V((col - (inRow - 1) / 2) * sX, ((rows - 1) / 2 - row) * sY, rnd(-0.5, 0.5));
-    // Real extruded 3D logo when available; stylized brand tile otherwise.
-    let mesh, mats;
-    const logo = c.icon && hasLogo(c.icon) ? makeLogoMesh(c.icon) : null;
-    if (logo) { mesh = logo.mesh; mats = logo.mats; }
-    else {
-      const tex = new THREE.CanvasTexture(makePatternCanvas(c));
-      tex.anisotropy = 4; tex.colorSpace = THREE.SRGBColorSpace;
-      const face = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5, metalness: 0.2, transparent: true });
-      const edge = new THREE.MeshStandardMaterial({ color: new THREE.Color((c.palette && c.palette[0]) || c.color), roughness: 0.4, metalness: 0.3, transparent: true });
-      mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.16), [edge, edge, edge, edge, face, face]);
-      mats = [face, edge];
-    }
-    mesh.position.copy(base); mesh.userData = { type: "co", data: c }; root.add(mesh);
-    const lab = labelTexture(c.name, "#ffffff", "rgba(0,0,0,.65)"); // readable on the black space bg
-    const nm = new THREE.Sprite(new THREE.SpriteMaterial({ map: lab.tex, transparent: true, depthTest: false }));
-    nm.scale.set(0.5 * lab.aspect, 0.5, 1); root.add(nm);
-    return {
-      data: c, mesh, label: nm, mats, base,
-      drift: { px: rnd(0, 6.28), py: rnd(0, 6.28), pz: rnd(0, 6.28), sp: rnd(0.15, 0.35) },
-      tilt: rnd(0, 6.28), scale: 0.92, targetScale: 0.92,
-    };
-  });
-  controls.target.set(0, 0, 0);
-}
-
-function matchCompany(c) {
-  const mq = !query || c.name.toLowerCase().includes(query);
-  const md = activeDomains.size === 0 || c.domains.some((d) => activeDomains.has(d));
-  return mq && md;
-}
-
-/* ---------- interaction ---------- */
-function updatePointer(e) { const r = renderer.domElement.getBoundingClientRect();
-  pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1; pointer.y = -((e.clientY - r.top) / r.height) * 2 + 1; }
-function pick() {
-  raycaster.setFromCamera(pointer, camera);
-  const hit = raycaster.intersectObjects(coNodes.map((n) => n.mesh), false)[0];
-  return hit ? coNodes.find((n) => n.mesh === hit.object) : null;
-}
-let down = false, moved = false;
-renderer.domElement.addEventListener("pointermove", (e) => {
-  updatePointer(e); if (down) { moved = true; return; }
-  hovered = pick(); renderer.domElement.style.cursor = hovered ? "pointer" : "grab";
-});
-renderer.domElement.addEventListener("pointerdown", () => { down = true; moved = false; });
-function flyTo(node) { const p = node.mesh.position; camAnim = { toTarget: p.clone(), toPos: p.clone().add(V(0, 0, 6.2)) }; }
-function resetCam() { camAnim = { toTarget: V(0, 0, 0), toPos: V(0, 0, DEFAULT_Z) }; }
-renderer.domElement.addEventListener("pointerup", () => {
-  if (!moved) { const n = pick();
-    if (n) { selected = n; openPanel(n.data); flyTo(n); } else { selected = null; closePanel(); resetCam(); } }
-  down = false;
-});
-
-/* ---------- panel ---------- */
-const panel = el("panel");
-function openPanel(c) {
-  el("p-name").textContent = c.name;
-  el("p-hq").textContent = `${c.hq}${c.ticker && c.ticker !== "—" ? " · " + c.ticker : ""}`;
-  el("p-blurb").textContent = c.blurb;
-  const p0 = (c.palette && c.palette[0]) || c.color;
-  const mono = el("p-mono"); mono.textContent = c.mono; mono.style.background = p0;
-  mono.style.color = lum(p0) > 0.7 ? "#111" : "#fff";
-  el("p-fpn").textContent = c.domains.length;
-  const bar = el("p-fpbar"); bar.style.width = "0%";
-  requestAnimationFrame(() => { bar.style.width = `${(c.domains.length / DOMAINS.length) * 100}%`; });
-  const dc = el("p-domains"); dc.innerHTML = "";
-  c.domains.forEach((id) => { const d = domainById[id]; const s = document.createElement("span"); s.textContent = d.label; s.style.background = d.color; dc.appendChild(s); });
-  panel.hidden = false; requestAnimationFrame(() => panel.classList.add("open"));
-}
-function closePanel() { panel.classList.remove("open"); setTimeout(() => { panel.hidden = true; }, 320); }
-el("p-close").addEventListener("click", () => { selected = null; closePanel(); });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") { selected = null; closePanel(); } });
-
-/* ---------- filters ---------- */
-function toggleDomain(id) {
-  if (activeDomains.has(id)) activeDomains.delete(id); else activeDomains.add(id);
-  [...el("chips").children].forEach((b) => b.setAttribute("aria-pressed", activeDomains.has(b.dataset.id) ? "true" : "false"));
-  updateCount();
-}
-function buildChips() {
-  const wrap = el("chips");
-  DOMAINS.forEach((d) => {
-    const b = document.createElement("button"); b.className = "chip"; b.dataset.id = d.id;
-    b.setAttribute("aria-pressed", "false"); b.style.setProperty("--dc", d.color);
-    b.innerHTML = '<span class="dot"></span>' + d.label;
-    b.addEventListener("click", () => toggleDomain(d.id)); wrap.appendChild(b);
-  });
-}
-el("search").addEventListener("input", (e) => { query = e.target.value.trim().toLowerCase(); updateCount(); });
-function updateCount() { el("count").textContent = `${COMPANIES.filter(matchCompany).length} / ${COMPANIES.length} companies`; }
-
-function buildA11y() {
-  let html = "<h2>U.S. tech companies by technology domain</h2>";
-  DOMAINS.forEach((d) => { html += `<h3>${d.label}</h3><ul>`;
-    COMPANIES.filter((c) => c.domains.includes(d.id)).forEach((c) => { html += `<li>${c.name} — ${c.blurb}</li>`; });
-    html += "</ul>"; });
-  el("a11y-list").innerHTML = html;
-}
-
-/* ---------- loop ---------- */
-function resize() { const r = container.getBoundingClientRect();
-  renderer.setSize(r.width, r.height); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix(); }
-window.addEventListener("resize", resize);
-
-const clock = new THREE.Clock();
-const camQ = new THREE.Quaternion();
-function tick() {
-  const t = clock.getElapsedTime();
-  const active = selected || hovered;
-  const anyFilter = activeDomains.size > 0 || query.length > 0;
-  coNodes.forEach((n) => {
-    const vis = matchCompany(n.data);
-    const isActive = active === n;
-    // opacity: filtered-out or dimmed-by-focus
-    let o = vis ? 1 : (anyFilter ? 0.06 : 1);
-    if (active && !isActive) o = Math.min(o, 0.14);
-    n.mats.forEach((m) => { m.opacity = o; }); n.label.material.opacity = Math.min(o, 0.95);
-    n.mesh.visible = o > 0.02; n.label.visible = o > 0.02 && (isActive || (!active && vis));
-    // motion (independent drift + spin), frozen when focused or reduced-motion
-    const d = n.drift;
-    const pos = n.base.clone();
-    // gentle float around the grid slot (small amplitude)
-    if (!REDUCE && !isActive) pos.add(V(Math.sin(t * d.sp + d.px) * 0.12, Math.sin(t * d.sp * 0.9 + d.py) * 0.16, Math.sin(t * d.sp * 1.1 + d.pz) * 0.18));
-    n.mesh.position.copy(pos);
-    n.label.position.copy(pos).add(V(0, 0.66, 0));
-    if (isActive) {
-      camera.getWorldQuaternion(camQ); n.mesh.quaternion.slerp(camQ, 0.25); // square up to camera
-      n.targetScale = 1.5;
-    } else {
-      n.targetScale = 0.92;
-      // face forward with a soft sway (stays readable, still feels alive)
-      if (!REDUCE) { n.mesh.rotation.y = Math.sin(t * 0.5 + n.tilt) * 0.13; n.mesh.rotation.x = Math.sin(t * 0.4 + n.tilt) * 0.08; }
-      else { n.mesh.rotation.set(0, 0, 0); }
-    }
-    n.scale += (n.targetScale - n.scale) * 0.18;
-    n.mesh.scale.setScalar(n.scale);
-  });
-  if (camAnim) {
-    camera.position.lerp(camAnim.toPos, 0.09);
-    controls.target.lerp(camAnim.toTarget, 0.09);
-    if (camera.position.distanceTo(camAnim.toPos) < 0.06) camAnim = null;
+function employeesRow(c) {
+  const e = c.employees;
+  if (e && e.value != null) {
+    const src = e.source_url
+      ? ` · <a href="${esc(e.source_url)}" target="_blank" rel="noopener" style="color:var(--accent)">source${e.as_of ? ` (${esc(e.as_of)})` : ""} ↗</a>` : "";
+    return `<dt>Employees</dt><dd>${Number(e.value).toLocaleString()}${e.tier ? ` · tier ${esc(e.tier)}` : ""}${src}</dd>`;
   }
-  controls.update(); renderer.render(scene, camera); requestAnimationFrame(tick);
+  return `<dt>Employees</dt><dd>Unknown — sourced from the SEC 10-K when available</dd>`;
+}
+
+function renderDetail(data, id) {
+  const c = data.companies.find((x) => x.id === id);
+  if (!c) {
+    document.title = "Company not found — TechAtlas";
+    app.innerHTML = `<article class="detail"><a class="back" href="./">← All companies</a>
+      <p class="empty">No company matches “${esc(id)}”.</p></article>`;
+    return;
+  }
+  document.title = `${c.name} — TechAtlas`;
+  const bg = tileBg(c);
+  const domainList = (c.domains || []).map((did) => esc(DOMAIN_BY_ID[did]?.label || did)).join(", ") || "—";
+
+  app.innerHTML = `<article class="detail">
+    <a class="back" href="./">← All companies</a>
+    <div class="detail-top">
+      <span class="big" style="background:${esc(bg)}">${logoInner(c)}</span>
+      <div>
+        <h1>${esc(c.name)}</h1>
+        ${c.ticker ? `<div class="tkr">${esc(c.ticker)}</div>` : ""}
+        ${c.hq ? `<div class="hq">${esc(c.hq)}</div>` : ""}
+      </div>
+    </div>
+    ${c.blurb ? `<p class="blurb">${esc(c.blurb)}</p>` : ""}
+    ${domainChips(c)}
+    ${leadershipSection(c)}
+    <dl class="kv">
+      ${c.ticker ? `<dt>Ticker</dt><dd>${esc(c.ticker)}</dd>` : ""}
+      ${c.hq ? `<dt>HQ</dt><dd>${esc(c.hq)}</dd>` : ""}
+      ${employeesRow(c)}
+      <dt>Domains</dt><dd>${domainList}</dd>
+    </dl>
+  </article>`;
 }
 
 /* ---------- boot ---------- */
-async function boot() {
-  try {
-    const res = await fetch("./companies.json", { cache: "no-store" });
-    const data = await res.json();
-    DOMAINS = data.domains; COMPANIES = data.companies;
-    domainById = Object.fromEntries(DOMAINS.map((d) => [d.id, d]));
-    build(); buildChips(); buildA11y(); updateCount(); resize(); tick();
-  } catch (err) {
-    container.innerHTML = `<p style="padding:2rem;color:var(--muted);font-family:var(--font-mono)">Could not load companies.json — run the pipeline export first.<br>${err}</p>`;
+async function load() {
+  for (const url of ["/api/companies", "./companies.json"]) {
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      if (r.ok) return await r.json();
+    } catch { /* try next */ }
   }
+  return null;
 }
-boot();
+
+(async () => {
+  const data = await load();
+  if (!data) {
+    app.innerHTML = `<p class="empty">Could not load company data. The pipeline export may not have run yet.</p>`;
+    return;
+  }
+  data.domains = data.domains || [];
+  data.companies = data.companies || [];
+  DOMAIN_BY_ID = Object.fromEntries(data.domains.map((d) => [d.id, d]));
+  const id = new URLSearchParams(location.search).get("company");
+  if (id) renderDetail(data, id); else renderHome(data);
+})();

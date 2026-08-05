@@ -47,7 +47,8 @@ data and no fabricated values**.
 | HQ state, exchange | SEC EDGAR submissions | **Authoritative** | Structured fields. |
 | Industry / **domain** | SEC **`sicDescription`** verbatim (see `pipeline/sic.py`) | **Authoritative** (from the source) | No hand-picked catalog — domains *are* the industries present in the real data → "all available domains". |
 | **Employee count** → tier | SEC **10-K** human-capital disclosure only | **Authoritative** | Parsed conservatively; unverifiable → `unknown` tier. |
-| Company narrative (for RAG) | SEC 10-K business / risk / human-capital sections | **Authoritative** | Stored verbatim + citation; never paraphrased into "facts". |
+| **Leadership & board** (CEO, CTO, officers, directors) | SEC **Forms 3/4/5** (structured officer/director records + titles) + **DEF 14A** proxy (full board/committees/bios) | **Authoritative** | Names/titles only where a filing attributes them; each entry carries `source_url` + `as_of`. Never invented. |
+| Company narrative (for RAG) | SEC 10-K business / risk / human-capital sections + DEF 14A | **Authoritative** | Stored verbatim + citation; never paraphrased into "facts". |
 
 **Why not Wikidata / scraped tables for headcount?** They have the field but are
 crowdsourced/estimated — presenting them as fact is exactly the "wrong
@@ -92,6 +93,22 @@ ever assigned to a band from a verified 10-K value.
 
 If headcount is not verifiable: `employees.value = null`, `tier = "unknown"`,
 `source = null` — the field is present but explicitly empty.
+
+**`leadership`** — array of provenance-wrapped people, populated from filings:
+
+```jsonc
+"leadership": [
+  { "name": "…", "title": "Chief Executive Officer", "role_type": "officer",
+    "source_url": "https://www.sec.gov/Archives/edgar/data/320193/….htm",
+    "accession": "…", "as_of": "2025-01-10" },
+  { "name": "…", "title": "Director", "role_type": "director", "source_url": "…", "as_of": "…" }
+]
+```
+
+`role_type` ∈ `officer` | `director`. Structured officer/director records come
+from Forms 3/4/5; fuller board/committee/bio detail comes from the DEF 14A proxy
+via the RAG stage. Absent → the detail page shows a "sourced from filings, not
+yet ingested" state — never placeholder names.
 
 **`domains`** — dynamic domain list (id, label, color) derived from the SIC
 groups actually present. **`filings`** — RAG chunks: `{ cik, accession, url,
