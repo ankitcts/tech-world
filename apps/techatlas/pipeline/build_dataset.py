@@ -32,6 +32,7 @@ from apps.techatlas.pipeline.edgar import (
     extract_employees,
     extract_leadership,
     latest_filing,
+    ownership_xml_url,
 )
 from apps.techatlas.pipeline.models import (
     AgentRunRepository,
@@ -150,16 +151,23 @@ def _employees_field(company_record, submission, client, now_iso, errors):
 
 def _leadership_field(company_record, submission, client, errors):
     filing = latest_filing(submission, FORMS_OWNERSHIP)
-    if not filing or not filing.get("url"):
+    if not filing or not filing.get("primary_document"):
+        return [], False
+    # Parse the RAW ownership XML (not the XSL-rendered HTML page EDGAR lists as
+    # primaryDocument), but cite the human-readable filing page.
+    raw_url = ownership_xml_url(
+        submission.get("cik"), filing.get("accession") or "", filing["primary_document"]
+    )
+    if not raw_url:
         return [], False
     try:
-        xml = client.get_text(filing["url"])
+        xml = client.get_text(raw_url)
     except Exception as exc:  # noqa: BLE001
         errors.append(f"{company_record['id']} ownership fetch: {exc}")
         return [], False
     people = extract_leadership(
         xml,
-        source_url=filing.get("url"),
+        source_url=filing.get("url") or raw_url,
         accession=filing.get("accession") or None,
         as_of=filing.get("filing_date") or None,
     )

@@ -118,6 +118,20 @@ def _archive_url(cik: int, accession: str, document: str) -> str:
     )
 
 
+def ownership_xml_url(cik, accession: str, primary_document: str) -> str | None:
+    """Raw ownership-XML URL for a Form 3/4/5 filing.
+
+    EDGAR lists an XSL-rendered *HTML* page as the filing's ``primaryDocument``
+    for ownership forms (e.g. ``xslF345X05/wf-form4_1.xml``); fetching that
+    yields HTML the XML parser can't read. The raw XML sits at the accession
+    root under the same filename, so we drop any leading render-path segment.
+    """
+    if cik is None or not primary_document:
+        return None
+    raw = primary_document.split("/")[-1]  # strip any "xslF345X0N/" render prefix
+    return _archive_url(cik, accession, raw)
+
+
 def latest_filing(submission: dict, forms) -> dict | None:
     """Most recent filing in ``submission`` whose ``form`` is in ``forms``.
 

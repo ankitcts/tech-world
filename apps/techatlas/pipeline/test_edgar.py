@@ -248,6 +248,22 @@ def test_latest_filing_absent_returns_none():
     assert edgar.latest_filing(s, {"DEF 14A"}) is None
 
 
+def test_ownership_xml_url_strips_xsl_render_prefix():
+    # EDGAR lists the XSL-rendered HTML page as primaryDocument; we must fetch
+    # the raw XML at the accession root instead.
+    url = edgar.ownership_xml_url(320193, "0000320193-25-000010", "xslF345X05/wf-form4_1.xml")
+    assert url == (
+        "https://www.sec.gov/Archives/edgar/data/320193/"
+        "000032019325000010/wf-form4_1.xml"
+    )
+    # Already-raw filenames pass through unchanged.
+    assert edgar.ownership_xml_url(320193, "0000320193-25-000010", "form4a.xml") == (
+        "https://www.sec.gov/Archives/edgar/data/320193/000032019325000010/form4a.xml"
+    )
+    assert edgar.ownership_xml_url(None, "x", "form4.xml") is None
+    assert edgar.ownership_xml_url(1, "x", "") is None
+
+
 # --- tier/domain wiring end-to-end on a fake record -------------------------
 
 def test_tier_and_domain_wiring():
