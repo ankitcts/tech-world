@@ -41,16 +41,29 @@ class handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):  # noqa: N802 - Vercel handler contract
-        secret = os.environ.get("CRON_SECRET")
+        secret = (os.environ.get("CRON_SECRET") or "").strip()
         if secret:
             # Vercel Cron sends the secret as a Bearer header; also accept it as a
             # ?key= query param so the run can be triggered manually from a browser.
+            # Values are stripped because pasted env vars often carry a trailing
+            # newline/space that would otherwise never match.
             from urllib.parse import urlparse, parse_qs
 
-            auth = self.headers.get("Authorization", "")
-            key = parse_qs(urlparse(self.path).query).get("key", [""])[0]
+            auth = self.headers.get("Authorization", "").strip()
+            query = urlparse(self.path).query
+            key = (parse_qs(query).get("key", [""])[0] or "").strip()
             if auth != f"Bearer {secret}" and key != secret:
-                self._send(401, {"error": "unauthorized"})
+                # Safe diagnostics only — never echoes the secret or the key value.
+                self._send(401, {
+                    "error": "unauthorized",
+                    "hint": {
+                        "secret_configured": True,
+                        "received_key_len": len(key),
+                        "secret_len": len(secret),
+                        "received_auth_header": bool(auth),
+                        "path_has_query": bool(query),
+                    },
+                })
                 return
 
         try:
