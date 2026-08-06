@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Vercel build failure ("No python entrypoint found"): moved the `scraper/`
+  toolkit's dependency list from the repo-root `requirements.txt` to
+  `scraper/requirements.txt`. A root `requirements.txt` made Vercel's newer
+  builder treat the whole repo as a single Python app needing one entrypoint,
+  instead of deploying `api/*.py` as independent serverless functions (whose
+  deps come from `api/requirements.txt`). Updated the one doc reference.
+
 ### Added
 - `/api/refresh` accepts the `CRON_SECRET` via a `?key=` query param (in addition
   to the `Authorization: Bearer` header the cron sends), so a run can be triggered

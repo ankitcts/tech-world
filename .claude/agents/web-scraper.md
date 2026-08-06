@@ -37,7 +37,7 @@ Key options:
 - `--header Name=Value` — extra request headers (auth, cookies, referer).
 - `--format json|csv|text` and `--out <file>`.
 
-Install deps first if needed: `pip install -r requirements.txt`
+Install deps first if needed: `pip install -r scraper/requirements.txt`
 (add `playwright` for `--mode dynamic`; Chromium is pre-provisioned here).
 
 ## Choosing a mode
