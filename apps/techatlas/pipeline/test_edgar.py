@@ -8,8 +8,52 @@ fixtures. Plain asserts; run from the repo root:
 
 from __future__ import annotations
 
-from apps.techatlas.pipeline import edgar, sic
+from apps.techatlas.pipeline import build_dataset, edgar, sic
 from apps.techatlas.pipeline.tiers import classify_tier
+
+
+# --- raw-filing storage (pure; fake repo) -----------------------------------
+
+class _FakeRaw:
+    def __init__(self):
+        self.docs = []
+
+    def upsert(self, doc):
+        self.docs.append(doc)
+
+
+def test_store_raw_html_cleans_text_and_keeps_small_raw():
+    repo, counts = _FakeRaw(), {}
+    html = "<html><body><p>Hello &amp; world</p><script>x=1</script></body></html>"
+    filing = {"accession": "0001-24-1", "form": "10-K",
+              "url": "http://x/10k.htm", "report_date": "2024-12-31"}
+    build_dataset._store_raw(repo, {"id": "aapl", "ticker": "AAPL"}, 320193,
+                             filing, html, "html", "2026-01-01T00:00:00Z", counts)
+    assert len(repo.docs) == 1
+    d = repo.docs[0]
+    assert d["id"] == "0001-24-1" and d["company_id"] == "aapl" and d["form"] == "10-K"
+    assert d["cik"] == "0000320193" and d["ticker"] == "AAPL"
+    assert "Hello & world" in d["text"] and "<p>" not in d["text"] and "x=1" not in d["text"]
+    assert d["raw"] == html and d["raw_stored"] is True
+    assert d["as_of"] == "2024-12-31" and d["fetched_at"] == "2026-01-01T00:00:00Z"
+    assert counts["raw_stored"] == 1
+
+
+def test_store_raw_skips_without_accession():
+    repo, counts = _FakeRaw(), {}
+    build_dataset._store_raw(repo, {"id": "x"}, 1, {"accession": ""}, "data", "xml", "t", counts)
+    assert repo.docs == [] and counts == {}
+
+
+def test_store_raw_drops_oversized_raw_but_keeps_text():
+    repo, counts = _FakeRaw(), {}
+    big = "a" * (build_dataset.RAW_MAX_BYTES + 10)  # over the raw-bytes cap
+    filing = {"accession": "acc", "form": "4", "filing_date": "2025-01-10"}
+    build_dataset._store_raw(repo, {"id": "c", "ticker": "C"}, 5, filing, big, "xml", "t", counts)
+    d = repo.docs[0]
+    assert d["raw"] is None and d["raw_stored"] is False
+    assert d["byte_size"] == len(big)
+    assert len(d["text"]) == min(len(big), build_dataset.TEXT_MAX_BYTES)
 
 
 # --- Employee-count extraction ----------------------------------------------

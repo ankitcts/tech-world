@@ -41,17 +41,23 @@ class handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):  # noqa: N802 - Vercel handler contract
+        from urllib.parse import urlparse, parse_qs
+
+        query = urlparse(self.path).query
+        params = parse_qs(query)
+        try:
+            chain = int((params.get("chain", ["0"])[0] or "0"))
+        except ValueError:
+            chain = 0
+
         secret = (os.environ.get("CRON_SECRET") or "").strip()
         if secret:
             # Vercel Cron sends the secret as a Bearer header; also accept it as a
             # ?key= query param so the run can be triggered manually from a browser.
             # Values are stripped because pasted env vars often carry a trailing
             # newline/space that would otherwise never match.
-            from urllib.parse import urlparse, parse_qs
-
             auth = self.headers.get("Authorization", "").strip()
-            query = urlparse(self.path).query
-            key = (parse_qs(query).get("key", [""])[0] or "").strip()
+            key = (params.get("key", [""])[0] or "").strip()
             if auth != f"Bearer {secret}" and key != secret:
                 # Safe diagnostics only — never echoes the secret or the key value.
                 self._send(401, {
@@ -75,3 +81,35 @@ class handler(BaseHTTPRequestHandler):
             self._send(200, {"ok": True, "summary": summary})
         except Exception as exc:  # noqa: BLE001 - report failure, never fabricate
             self._send(500, {"ok": False, "error": str(exc)})
+            return
+
+        # Self-continue the backfill so a single fire drains the backlog without
+        # anyone re-hitting the URL. Best-effort (works on the public production
+        # deployment; preview deployments are auth-gated). Bounded + opt-out.
+        self._maybe_continue(secret, chain, summary)
+
+    def _maybe_continue(self, secret: str, chain: int, summary: dict) -> None:
+        auto = (os.environ.get("TECHATLAS_AUTO_CONTINUE", "1").strip().lower()
+                not in ("0", "false", "no", "off", ""))
+        try:
+            chain_max = int(os.environ.get("TECHATLAS_CHAIN_MAX", "500"))
+        except ValueError:
+            chain_max = 500
+        if not (auto and secret and chain < chain_max):
+            return
+        if summary.get("enriched", 0) <= 0 or summary.get("unenriched_remaining", 0) <= 0:
+            return
+        host = os.environ.get("VERCEL_URL")
+        if not host:
+            return
+        try:
+            import urllib.request
+            from urllib.parse import quote
+
+            url = f"https://{host}/api/refresh?key={quote(secret)}&chain={chain + 1}"
+            req = urllib.request.Request(url, headers={"User-Agent": "techatlas-selfcontinue"})
+            # Kick the next invocation; don't block on its full run. The daily
+            # cron resumes via the stalest-first cursor if this link is dropped.
+            urllib.request.urlopen(req, timeout=3).read(0)
+        except Exception:  # noqa: BLE001 - best-effort; never fail the primary run
+            pass

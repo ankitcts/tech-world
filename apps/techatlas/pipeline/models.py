@@ -89,6 +89,10 @@ class CompanyRepository:
             .limit(max(0, int(limit)))
         )
 
+    def count_unenriched(self) -> int:
+        """How many companies have never been enriched (``enriched_at`` null/missing)."""
+        return self.col.count_documents({"enriched_at": None})
+
     def by_domain(self, domain_id: str) -> list[dict]:
         return list(self.col.find({"domains": domain_id}, {"_id": 0}))
 
@@ -119,3 +123,29 @@ class AgentRunRepository:
         self.col.update_one(
             {"_id": self.CURSOR_ID}, {"$set": cursor}, upsert=True
         )
+
+
+class RawFilingRepository:
+    """Raw fetched SEC filings kept for later LLM/RAG use (collection ``raw_filings``).
+
+    One document per filing (keyed by accession): the cleaned, LLM-ready ``text``
+    plus the original bytes in ``raw`` when small enough, with provenance. This is
+    the source corpus Stage 2 (embeddings/RAG) will chunk and index.
+    """
+
+    collection_name = "raw_filings"
+
+    def __init__(self, db):
+        self.col = db[self.collection_name]
+
+    def ensure_indexes(self):
+        self.col.create_index("id", unique=True)
+        self.col.create_index("cik")
+        self.col.create_index("company_id")
+        self.col.create_index("form")
+
+    def upsert(self, doc: dict) -> None:
+        self.col.update_one({"id": doc["id"]}, {"$set": doc}, upsert=True)
+
+    def all(self, projection: dict | None = None) -> list[dict]:
+        return list(self.col.find({}, projection or {"_id": 0}))

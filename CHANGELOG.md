@@ -25,6 +25,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   deps come from `api/requirements.txt`). Updated the one doc reference.
 
 ### Added
+- **Raw filing storage** for later LLM/RAG use: every fetched 10-K and Form 3/4/5
+  is persisted to a `raw_filings` MongoDB collection with provenance — LLM-ready
+  cleaned `text` always, plus the original bytes in `raw` when small enough to
+  stay under MongoDB's 16 MB doc cap (both truncation cases flagged, never
+  silently dropped). This is the source corpus Stage 2 will chunk and embed.
+- **Self-driving fetch** (no more manual URL hits): each `/api/refresh` run is
+  now **time-budgeted** (`TECHATLAS_TIME_BUDGET_S`, default 45s) — it drains the
+  stalest companies until the budget is spent — and **self-continues**: on the
+  public production deployment it fires the next batch itself (bounded by
+  `TECHATLAS_CHAIN_MAX`, opt-out via `TECHATLAS_AUTO_CONTINUE`), so a single
+  daily cron fire cascades through the whole backlog and then keeps it fresh,
+  resuming via the stalest-first cursor if a link drops. Run summary now reports
+  `raw_stored` and `unenriched_remaining`.
 - A logo for **every** company, not just the curated set: tiles now layer a real
   brand SVG (curated) → a **logo-by-ticker image** (keyless CDN, with a second
   source as fallback) → a monogram, so the SEC long-tail gets logos too, degrading
