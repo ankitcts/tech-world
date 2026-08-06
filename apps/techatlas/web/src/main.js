@@ -31,6 +31,53 @@ const ICONS = {};
  siEbay, siZoom, siLyft, siRobinhood]
   .forEach((i) => { ICONS[i.slug] = i; });
 
+/* Curated presentation (logos, brand colors, blurbs) for well-known companies.
+   Bundled from the seed so brand identity survives even when the live SEC data
+   only carries name/ticker. Keyed by uppercased ticker. */
+import seedData from "../public/companies.json";
+const CURATED = {};
+for (const c of seedData.companies || []) {
+  if (c.ticker) CURATED[c.ticker.toUpperCase()] = c;
+}
+const curatedFor = (c) => (c && c.ticker ? CURATED[String(c.ticker).toUpperCase()] : null);
+const SEED_DOMAIN_IDS = new Set((seedData.domains || []).map((d) => d.id));
+
+// Merge the curated seed with the live SEC data: curated companies keep their
+// identity (logo/blurb/domains) and are ENRICHED with live SEC facts (employee
+// tier, leadership, hq) matched by ticker; the SEC long-tail is added on top.
+function mergeWithSeed(live) {
+  const domainById = {};
+  for (const d of seedData.domains || []) domainById[d.id] = d;
+  for (const d of live.domains || []) if (!domainById[d.id]) domainById[d.id] = d;
+
+  const keyOf = (c) => (c.ticker ? "T:" + String(c.ticker).toUpperCase() : "I:" + c.id);
+  const byKey = new Map();
+  for (const c of seedData.companies || []) byKey.set(keyOf(c), { ...c });
+  for (const lc of live.companies || []) {
+    const k = keyOf(lc);
+    const cur = byKey.get(k);
+    if (cur) {
+      byKey.set(k, {
+        ...cur,
+        hq: cur.hq || lc.hq,
+        cik: lc.cik ?? cur.cik,
+        sic: lc.sic ?? cur.sic,
+        sic_description: lc.sic_description ?? cur.sic_description,
+        employees: lc.employees ?? cur.employees,
+        leadership: lc.leadership && lc.leadership.length ? lc.leadership : cur.leadership,
+        domains: Array.from(new Set([...(cur.domains || []), ...(lc.domains || [])])),
+      });
+    } else {
+      byKey.set(k, lc);
+    }
+  }
+  const companies = Array.from(byKey.values());
+  const referenced = new Set();
+  companies.forEach((c) => (c.domains || []).forEach((d) => referenced.add(d)));
+  const domains = Object.values(domainById).filter((d) => referenced.has(d.id));
+  return { domains, companies };
+}
+
 const app = document.getElementById("app");
 let DOMAIN_BY_ID = {};
 let DATA = { domains: [], companies: [] };
@@ -63,15 +110,17 @@ function lum(hex) {
 }
 const ink = (bg) => (bg.startsWith("#") && lum(bg) > 0.62 ? "#0B0D12" : "#ffffff");
 function initials(c) {
-  if (c.mono) return c.mono;
+  const cur = curatedFor(c);
+  if (c.mono || cur?.mono) return c.mono || cur.mono;
   const w = String(c.name).trim().split(/\s+/).filter(Boolean);
   return (((w[0] || "")[0] || "") + ((w[1] || "")[0] || "")).toUpperCase() || "•";
 }
-const tileBg = (c) => c.color || fallbackColor(c.name);
+const tileBg = (c) => c.color || curatedFor(c)?.color || fallbackColor(c.name);
 
 function logoInner(c) {
   const fg = ink(tileBg(c));
-  const icon = c.icon && ICONS[c.icon];
+  const slug = c.icon || curatedFor(c)?.icon;
+  const icon = slug && ICONS[slug];
   if (icon) return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="${fg}"><path d="${esc(icon.path)}"/></svg>`;
   return `<span class="mono" style="color:${fg}">${esc(initials(c))}</span>`;
 }
@@ -86,13 +135,16 @@ function card(c) {
 }
 
 function rail(companies, index) {
-  // Repeat short lists so the marquee fills the width, then duplicate the whole
-  // sequence once so translateX(-50%) loops seamlessly.
+  // Repeat the list until one "half" is wider than ~1.6 viewports, so the
+  // translateX(-50%) loop always has real travel — every row scrolls, even a
+  // domain with only a couple of companies.
+  const CARD = 162; // card width + gap
+  const minItems = Math.max(12, Math.ceil((window.innerWidth * 1.6) / CARD));
   let list = companies.slice();
-  while (list.length && list.length < 10) list = list.concat(companies);
+  if (list.length) while (list.length < minItems) list = list.concat(companies);
   const half = list.map(card).join("");
   const dir = index % 2 ? "rev" : "fwd";
-  const dur = 52 + (index % 3) * 20;
+  const dur = Math.round(list.length * 2.6) + 20; // steady speed regardless of length
   return `<div class="rail" data-dir="${dir}" style="--dur:${dur}s">
     <div class="track">${half}${half}</div>
   </div>`;
@@ -127,17 +179,20 @@ function renderContent() {
       : `<p class="empty">No companies match “${esc(q)}”.</p>`;
     return;
   }
-  const rows = DATA.domains.map((d, i) => {
-    const companies = pool.filter((c) => (c.domains || []).includes(d.id));
-    if (!companies.length) return "";
-    return `<section class="row">
+  // Build rows, fullest first. Skip sparse SIC domains (unless curated) so we
+  // don't get dozens of one-company rows while the SEC backfill is still thin.
+  const rows = DATA.domains
+    .map((d) => ({ d, companies: pool.filter((c) => (c.domains || []).includes(d.id)) }))
+    .filter(({ d, companies }) => companies.length
+      && (companies.length >= 3 || SEED_DOMAIN_IDS.has(d.id)))
+    .sort((a, b) => b.companies.length - a.companies.length)
+    .map(({ d, companies }, i) => `<section class="row">
       <div class="row-head">
         <h2><span class="dot" style="--dc:${esc(d.color || "var(--accent)")}"></span>${esc(d.label)}</h2>
         <span class="n">${companies.length}</span>
       </div>
       ${rail(companies, i)}
-    </section>`;
-  }).join("");
+    </section>`).join("");
   box.innerHTML = `<div class="rows">${rows || `<p class="empty">No companies match “${esc(q)}”.</p>`}</div>`;
 }
 
@@ -282,8 +337,8 @@ async function load() {
   }
   data.domains = data.domains || [];
   data.companies = data.companies || [];
-  DATA = data;
-  DOMAIN_BY_ID = Object.fromEntries(data.domains.map((d) => [d.id, d]));
+  DATA = mergeWithSeed(data);
+  DOMAIN_BY_ID = Object.fromEntries(DATA.domains.map((d) => [d.id, d]));
   const id = new URLSearchParams(location.search).get("company");
-  if (id) renderDetail(data, id); else renderHome();
+  if (id) renderDetail(DATA, id); else renderHome();
 })();

@@ -198,6 +198,11 @@ _EMP_PATTERNS = [
 ]
 
 
+def visible_text(html: str) -> str:
+    """Public: cleaned, LLM-ready plain text from filing HTML (see _visible_text)."""
+    return _visible_text(html)
+
+
 def _visible_text(html: str) -> str:
     """Strip tags/entities from filing HTML to a single normalized text line."""
     text = re.sub(r"(?is)<(script|style)[^>]*>.*?</\1>", " ", html or "")
