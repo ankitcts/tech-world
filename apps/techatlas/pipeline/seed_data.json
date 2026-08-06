@@ -38,44 +38,66 @@
   ],
   "companies": [
     {
-      "id": "apple",
-      "name": "Apple",
-      "ticker": "AAPL",
-      "mono": "Ap",
-      "color": "#111111",
+      "id": "adobe",
+      "name": "Adobe",
+      "ticker": "ADBE",
+      "mono": "Ad",
+      "color": "#FA0F00",
       "palette": [
-        "#111111",
-        "#A3AAAE"
+        "#FA0F00",
+        "#2B0808"
       ],
-      "pattern": "wordmark",
-      "hq": "Cupertino, CA",
+      "pattern": "split",
+      "hq": "San Jose, CA",
       "domains": [
-        "chips",
+        "enterprise",
         "ai"
       ],
-      "blurb": "Consumer hardware, Apple-silicon (M-series) and services.",
-      "icon": "apple"
+      "blurb": "Creative Cloud, Document Cloud and Firefly AI."
     },
     {
-      "id": "microsoft",
-      "name": "Microsoft",
-      "ticker": "MSFT",
-      "mono": "Ms",
-      "color": "#0A72C4",
-      "palette": [
-        "#F25022",
-        "#7FBA00",
-        "#00A4EF",
-        "#FFB900"
-      ],
-      "pattern": "quad",
-      "hq": "Redmond, WA",
+      "id": "affirm",
+      "name": "Affirm",
+      "ticker": "AFRM",
+      "mono": "Af",
+      "color": "#4A4AF4",
+      "hq": "San Francisco, CA",
       "domains": [
-        "cloud",
-        "ai",
-        "enterprise"
+        "fintech"
       ],
-      "blurb": "Azure cloud, Windows, Office and Copilot."
+      "blurb": "Buy-now-pay-later consumer lending."
+    },
+    {
+      "id": "airbnb",
+      "name": "Airbnb",
+      "ticker": "ABNB",
+      "mono": "Ab",
+      "color": "#FF385C",
+      "palette": [
+        "#FF385C",
+        "#ffffff",
+        "#E00B41"
+      ],
+      "pattern": "orbit",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "commerce"
+      ],
+      "blurb": "Global marketplace for stays and experiences.",
+      "icon": "airbnb"
+    },
+    {
+      "id": "akamai",
+      "name": "Akamai Technologies",
+      "ticker": "AKAM",
+      "mono": "Ak",
+      "color": "#0099CC",
+      "hq": "Cambridge, MA",
+      "domains": [
+        "cloud"
+      ],
+      "blurb": "Content delivery, cloud and security.",
+      "icon": "akamai"
     },
     {
       "id": "alphabet",
@@ -119,174 +141,6 @@
       "blurb": "AWS cloud leader and the largest U.S. marketplace."
     },
     {
-      "id": "meta",
-      "name": "Meta",
-      "ticker": "META",
-      "mono": "Me",
-      "color": "#0866FF",
-      "palette": [
-        "#0866FF",
-        "#0A7CFF",
-        "#ffffff"
-      ],
-      "pattern": "orbit",
-      "hq": "Menlo Park, CA",
-      "domains": [
-        "social",
-        "ai"
-      ],
-      "blurb": "Facebook, Instagram, WhatsApp and Llama models.",
-      "icon": "meta"
-    },
-    {
-      "id": "nvidia",
-      "name": "NVIDIA",
-      "ticker": "NVDA",
-      "mono": "Nv",
-      "color": "#76B900",
-      "palette": [
-        "#76B900",
-        "#0B0E14",
-        "#ffffff"
-      ],
-      "pattern": "orbit",
-      "hq": "Santa Clara, CA",
-      "domains": [
-        "chips",
-        "ai"
-      ],
-      "blurb": "GPUs and CUDA \u2014 the compute engine of the AI boom.",
-      "icon": "nvidia"
-    },
-    {
-      "id": "tesla",
-      "name": "Tesla",
-      "ticker": "TSLA",
-      "mono": "Te",
-      "color": "#CC0000",
-      "palette": [
-        "#CC0000",
-        "#111111"
-      ],
-      "pattern": "chevron",
-      "hq": "Austin, TX",
-      "domains": [
-        "ai",
-        "chips"
-      ],
-      "blurb": "EVs, autonomy (FSD) and the Dojo training silicon.",
-      "icon": "tesla"
-    },
-    {
-      "id": "netflix",
-      "name": "Netflix",
-      "ticker": "NFLX",
-      "mono": "Nf",
-      "color": "#E50914",
-      "palette": [
-        "#E50914",
-        "#831010"
-      ],
-      "pattern": "bars",
-      "hq": "Los Gatos, CA",
-      "domains": [
-        "social"
-      ],
-      "blurb": "Streaming media and original content at scale.",
-      "icon": "netflix"
-    },
-    {
-      "id": "adobe",
-      "name": "Adobe",
-      "ticker": "ADBE",
-      "mono": "Ad",
-      "color": "#FA0F00",
-      "palette": [
-        "#FA0F00",
-        "#2B0808"
-      ],
-      "pattern": "split",
-      "hq": "San Jose, CA",
-      "domains": [
-        "enterprise",
-        "ai"
-      ],
-      "blurb": "Creative Cloud, Document Cloud and Firefly AI."
-    },
-    {
-      "id": "salesforce",
-      "name": "Salesforce",
-      "ticker": "CRM",
-      "mono": "Sf",
-      "color": "#00A1E0",
-      "palette": [
-        "#00A1E0",
-        "#ffffff"
-      ],
-      "pattern": "ring",
-      "hq": "San Francisco, CA",
-      "domains": [
-        "enterprise",
-        "cloud"
-      ],
-      "blurb": "CRM leader; Data Cloud and Einstein AI."
-    },
-    {
-      "id": "oracle",
-      "name": "Oracle",
-      "ticker": "ORCL",
-      "mono": "Or",
-      "color": "#C74634",
-      "palette": [
-        "#C74634",
-        "#ffffff"
-      ],
-      "pattern": "wordmark",
-      "hq": "Austin, TX",
-      "domains": [
-        "cloud",
-        "enterprise"
-      ],
-      "blurb": "Databases, OCI cloud and enterprise apps."
-    },
-    {
-      "id": "ibm",
-      "name": "IBM",
-      "ticker": "IBM",
-      "mono": "Ib",
-      "color": "#0530AD",
-      "palette": [
-        "#0530AD",
-        "#ffffff"
-      ],
-      "pattern": "stripes",
-      "hq": "Armonk, NY",
-      "domains": [
-        "cloud",
-        "ai",
-        "enterprise"
-      ],
-      "blurb": "Hybrid cloud (Red Hat), consulting and watsonx."
-    },
-    {
-      "id": "intel",
-      "name": "Intel",
-      "ticker": "INTC",
-      "mono": "In",
-      "color": "#0071C5",
-      "palette": [
-        "#0071C5",
-        "#00C7FD"
-      ],
-      "pattern": "ring",
-      "hq": "Santa Clara, CA",
-      "domains": [
-        "chips"
-      ],
-      "blurb": "x86 CPUs and a growing U.S. foundry business.",
-      "icon": "intel"
-    },
-    {
       "id": "amd",
       "name": "AMD",
       "ticker": "AMD",
@@ -306,22 +160,116 @@
       "icon": "amd"
     },
     {
-      "id": "qualcomm",
-      "name": "Qualcomm",
-      "ticker": "QCOM",
-      "mono": "Qc",
-      "color": "#3253DC",
-      "palette": [
-        "#3253DC",
-        "#5E2CA5"
+      "id": "american-express",
+      "name": "American Express",
+      "ticker": "AXP",
+      "mono": "Ax",
+      "color": "#006FCF",
+      "hq": "New York, NY",
+      "domains": [
+        "fintech"
       ],
-      "pattern": "hex",
-      "hq": "San Diego, CA",
+      "blurb": "Payments, cards and travel services."
+    },
+    {
+      "id": "analog-devices",
+      "name": "Analog Devices",
+      "ticker": "ADI",
+      "mono": "AD",
+      "color": "#00539B",
+      "hq": "Wilmington, MA",
       "domains": [
         "chips"
       ],
-      "blurb": "Mobile SoCs, modems and Snapdragon platforms.",
-      "icon": "qualcomm"
+      "blurb": "High-performance analog and mixed-signal chips."
+    },
+    {
+      "id": "apple",
+      "name": "Apple",
+      "ticker": "AAPL",
+      "mono": "Ap",
+      "color": "#111111",
+      "palette": [
+        "#111111",
+        "#A3AAAE"
+      ],
+      "pattern": "wordmark",
+      "hq": "Cupertino, CA",
+      "domains": [
+        "chips",
+        "ai"
+      ],
+      "blurb": "Consumer hardware, Apple-silicon (M-series) and services.",
+      "icon": "apple"
+    },
+    {
+      "id": "applied-materials",
+      "name": "Applied Materials",
+      "ticker": "AMAT",
+      "mono": "AM",
+      "color": "#EB1C24",
+      "hq": "Santa Clara, CA",
+      "domains": [
+        "chips"
+      ],
+      "blurb": "Semiconductor and display manufacturing equipment."
+    },
+    {
+      "id": "asana",
+      "name": "Asana",
+      "ticker": "ASAN",
+      "mono": "As",
+      "color": "#F06A6A",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "enterprise"
+      ],
+      "blurb": "Work management software.",
+      "icon": "asana"
+    },
+    {
+      "id": "autodesk",
+      "name": "Autodesk",
+      "ticker": "ADSK",
+      "mono": "Ad",
+      "color": "#0696D7",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "enterprise"
+      ],
+      "blurb": "Design and engineering software (CAD/AEC).",
+      "icon": "autodesk"
+    },
+    {
+      "id": "block",
+      "name": "Block",
+      "ticker": "XYZ",
+      "mono": "Bk",
+      "color": "#000000",
+      "palette": [
+        "#000000",
+        "#00D632"
+      ],
+      "pattern": "grid",
+      "hq": "Oakland, CA",
+      "domains": [
+        "fintech"
+      ],
+      "blurb": "Square merchant tools and the Cash App ecosystem."
+    },
+    {
+      "id": "box",
+      "name": "Box",
+      "ticker": "BOX",
+      "mono": "Bx",
+      "color": "#0061D5",
+      "hq": "Redwood City, CA",
+      "domains": [
+        "cloud",
+        "enterprise"
+      ],
+      "blurb": "Cloud content management for business.",
+      "icon": "box"
     },
     {
       "id": "broadcom",
@@ -362,40 +310,17 @@
       "icon": "cisco"
     },
     {
-      "id": "paypal",
-      "name": "PayPal",
-      "ticker": "PYPL",
-      "mono": "Pp",
-      "color": "#003087",
-      "palette": [
-        "#003087",
-        "#009CDE",
-        "#ffffff"
-      ],
-      "pattern": "orbit",
-      "hq": "San Jose, CA",
+      "id": "cloudflare",
+      "name": "Cloudflare",
+      "ticker": "NET",
+      "mono": "Cf",
+      "color": "#F38020",
+      "hq": "San Francisco, CA",
       "domains": [
-        "fintech"
+        "cloud"
       ],
-      "blurb": "Digital payments, checkout and Venmo.",
-      "icon": "paypal"
-    },
-    {
-      "id": "block",
-      "name": "Block",
-      "ticker": "XYZ",
-      "mono": "Bk",
-      "color": "#000000",
-      "palette": [
-        "#000000",
-        "#00D632"
-      ],
-      "pattern": "grid",
-      "hq": "Oakland, CA",
-      "domains": [
-        "fintech"
-      ],
-      "blurb": "Square merchant tools and the Cash App ecosystem."
+      "blurb": "CDN, edge network and security.",
+      "icon": "cloudflare"
     },
     {
       "id": "coinbase",
@@ -416,97 +341,29 @@
       "icon": "coinbase"
     },
     {
-      "id": "visa",
-      "name": "Visa",
-      "ticker": "V",
-      "mono": "Vi",
-      "color": "#1A1F71",
-      "palette": [
-        "#1A1F71",
-        "#F7B600"
-      ],
-      "pattern": "split",
-      "hq": "San Francisco, CA",
-      "domains": [
-        "fintech"
-      ],
-      "blurb": "Global card network and payment processing.",
-      "icon": "visa"
-    },
-    {
-      "id": "uber",
-      "name": "Uber",
-      "ticker": "UBER",
-      "mono": "Ub",
-      "color": "#000000",
-      "palette": [
-        "#000000",
-        "#9AA0A6"
-      ],
-      "pattern": "grid",
-      "hq": "San Francisco, CA",
-      "domains": [
-        "commerce",
-        "ai"
-      ],
-      "blurb": "Mobility and delivery marketplaces with routing AI.",
-      "icon": "uber"
-    },
-    {
-      "id": "airbnb",
-      "name": "Airbnb",
-      "ticker": "ABNB",
-      "mono": "Ab",
-      "color": "#FF385C",
-      "palette": [
-        "#FF385C",
-        "#ffffff",
-        "#E00B41"
-      ],
-      "pattern": "orbit",
-      "hq": "San Francisco, CA",
-      "domains": [
-        "commerce"
-      ],
-      "blurb": "Global marketplace for stays and experiences.",
-      "icon": "airbnb"
-    },
-    {
-      "id": "doordash",
-      "name": "DoorDash",
-      "ticker": "DASH",
-      "mono": "Dd",
-      "color": "#FF3008",
-      "palette": [
-        "#FF3008",
-        "#ffffff"
-      ],
-      "pattern": "chevron",
-      "hq": "San Francisco, CA",
-      "domains": [
-        "commerce"
-      ],
-      "blurb": "Last-mile local delivery logistics platform.",
-      "icon": "doordash"
-    },
-    {
-      "id": "snowflake",
-      "name": "Snowflake",
-      "ticker": "SNOW",
-      "mono": "Sn",
-      "color": "#29B5E8",
-      "palette": [
-        "#29B5E8",
-        "#ffffff"
-      ],
-      "pattern": "spark",
-      "hq": "Bozeman, MT",
+      "id": "confluent",
+      "name": "Confluent",
+      "ticker": "CFLT",
+      "mono": "Co",
+      "color": "#173361",
+      "hq": "Mountain View, CA",
       "domains": [
         "cloud",
         "enterprise"
       ],
-      "blurb": "Cloud data warehouse and data-sharing network.",
-      "icon": "snowflake"
+      "blurb": "Data streaming platform (Apache Kafka)."
+    },
+    {
+      "id": "crowdstrike",
+      "name": "CrowdStrike",
+      "ticker": "CRWD",
+      "mono": "Cs",
+      "color": "#E01A22",
+      "hq": "Austin, TX",
+      "domains": [
+        "enterprise"
+      ],
+      "blurb": "Cloud-native endpoint security."
     },
     {
       "id": "databricks",
@@ -528,21 +385,456 @@
       "icon": "databricks"
     },
     {
-      "id": "servicenow",
-      "name": "ServiceNow",
-      "ticker": "NOW",
-      "mono": "Sv",
-      "color": "#62D84E",
-      "palette": [
-        "#62D84E",
-        "#0B3D2E"
+      "id": "datadog",
+      "name": "Datadog",
+      "ticker": "DDOG",
+      "mono": "Dd",
+      "color": "#632CA6",
+      "hq": "New York, NY",
+      "domains": [
+        "cloud",
+        "enterprise"
       ],
-      "pattern": "hex",
-      "hq": "Santa Clara, CA",
+      "blurb": "Cloud monitoring and observability.",
+      "icon": "datadog"
+    },
+    {
+      "id": "dell",
+      "name": "Dell Technologies",
+      "ticker": "DELL",
+      "mono": "De",
+      "color": "#0085C3",
+      "hq": "Round Rock, TX",
       "domains": [
         "enterprise"
       ],
-      "blurb": "Enterprise workflow and IT service management."
+      "blurb": "PCs, servers and enterprise infrastructure.",
+      "icon": "dell"
+    },
+    {
+      "id": "digitalocean",
+      "name": "DigitalOcean",
+      "ticker": "DOCN",
+      "mono": "Do",
+      "color": "#0080FF",
+      "hq": "New York, NY",
+      "domains": [
+        "cloud"
+      ],
+      "blurb": "Cloud hosting for developers and SMBs.",
+      "icon": "digitalocean"
+    },
+    {
+      "id": "doordash",
+      "name": "DoorDash",
+      "ticker": "DASH",
+      "mono": "Dd",
+      "color": "#FF3008",
+      "palette": [
+        "#FF3008",
+        "#ffffff"
+      ],
+      "pattern": "chevron",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "commerce"
+      ],
+      "blurb": "Last-mile local delivery logistics platform.",
+      "icon": "doordash"
+    },
+    {
+      "id": "dropbox",
+      "name": "Dropbox",
+      "ticker": "DBX",
+      "mono": "Db",
+      "color": "#0061FF",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "cloud"
+      ],
+      "blurb": "Cloud file storage and collaboration.",
+      "icon": "dropbox"
+    },
+    {
+      "id": "ebay",
+      "name": "eBay",
+      "ticker": "EBAY",
+      "mono": "eB",
+      "color": "#E53238",
+      "hq": "San Jose, CA",
+      "domains": [
+        "commerce"
+      ],
+      "blurb": "Online marketplace.",
+      "icon": "ebay"
+    },
+    {
+      "id": "fortinet",
+      "name": "Fortinet",
+      "ticker": "FTNT",
+      "mono": "Ft",
+      "color": "#DA291C",
+      "hq": "Sunnyvale, CA",
+      "domains": [
+        "enterprise"
+      ],
+      "blurb": "Network security and firewalls.",
+      "icon": "fortinet"
+    },
+    {
+      "id": "gitlab",
+      "name": "GitLab",
+      "ticker": "GTLB",
+      "mono": "Gl",
+      "color": "#FC6D26",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "enterprise",
+        "cloud"
+      ],
+      "blurb": "DevOps platform for software teams.",
+      "icon": "gitlab"
+    },
+    {
+      "id": "hpe",
+      "name": "Hewlett Packard Enterprise",
+      "ticker": "HPE",
+      "mono": "HE",
+      "color": "#01A982",
+      "hq": "Spring, TX",
+      "domains": [
+        "enterprise",
+        "cloud"
+      ],
+      "blurb": "Servers, storage and hybrid-cloud infrastructure."
+    },
+    {
+      "id": "hp",
+      "name": "HP Inc.",
+      "ticker": "HPQ",
+      "mono": "HP",
+      "color": "#0096D6",
+      "hq": "Palo Alto, CA",
+      "domains": [
+        "enterprise"
+      ],
+      "blurb": "Personal computers and printing.",
+      "icon": "hp"
+    },
+    {
+      "id": "hubspot",
+      "name": "HubSpot",
+      "ticker": "HUBS",
+      "mono": "Hs",
+      "color": "#FF7A59",
+      "hq": "Cambridge, MA",
+      "domains": [
+        "enterprise"
+      ],
+      "blurb": "CRM and marketing software.",
+      "icon": "hubspot"
+    },
+    {
+      "id": "ibm",
+      "name": "IBM",
+      "ticker": "IBM",
+      "mono": "Ib",
+      "color": "#0530AD",
+      "palette": [
+        "#0530AD",
+        "#ffffff"
+      ],
+      "pattern": "stripes",
+      "hq": "Armonk, NY",
+      "domains": [
+        "cloud",
+        "ai",
+        "enterprise"
+      ],
+      "blurb": "Hybrid cloud (Red Hat), consulting and watsonx."
+    },
+    {
+      "id": "instacart",
+      "name": "Instacart",
+      "ticker": "CART",
+      "mono": "Ic",
+      "color": "#FF7009",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "commerce"
+      ],
+      "blurb": "Grocery delivery and e-commerce technology."
+    },
+    {
+      "id": "intel",
+      "name": "Intel",
+      "ticker": "INTC",
+      "mono": "In",
+      "color": "#0071C5",
+      "palette": [
+        "#0071C5",
+        "#00C7FD"
+      ],
+      "pattern": "ring",
+      "hq": "Santa Clara, CA",
+      "domains": [
+        "chips"
+      ],
+      "blurb": "x86 CPUs and a growing U.S. foundry business.",
+      "icon": "intel"
+    },
+    {
+      "id": "intuit",
+      "name": "Intuit",
+      "ticker": "INTU",
+      "mono": "In",
+      "color": "#365EBF",
+      "hq": "Mountain View, CA",
+      "domains": [
+        "fintech",
+        "enterprise"
+      ],
+      "blurb": "Financial software \u2014 TurboTax, QuickBooks.",
+      "icon": "intuit"
+    },
+    {
+      "id": "kla",
+      "name": "KLA",
+      "ticker": "KLAC",
+      "mono": "KL",
+      "color": "#0033A0",
+      "hq": "Milpitas, CA",
+      "domains": [
+        "chips"
+      ],
+      "blurb": "Process control and yield systems for chip fabs."
+    },
+    {
+      "id": "lam-research",
+      "name": "Lam Research",
+      "ticker": "LRCX",
+      "mono": "LR",
+      "color": "#005EB8",
+      "hq": "Fremont, CA",
+      "domains": [
+        "chips"
+      ],
+      "blurb": "Wafer-fabrication equipment for chipmakers."
+    },
+    {
+      "id": "lyft",
+      "name": "Lyft",
+      "ticker": "LYFT",
+      "mono": "Ly",
+      "color": "#FF00BF",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "commerce"
+      ],
+      "blurb": "Ride-hailing and mobility.",
+      "icon": "lyft"
+    },
+    {
+      "id": "marvell",
+      "name": "Marvell Technology",
+      "ticker": "MRVL",
+      "mono": "Mv",
+      "color": "#0093D0",
+      "hq": "Santa Clara, CA",
+      "domains": [
+        "chips"
+      ],
+      "blurb": "Data-infrastructure semiconductors and custom silicon."
+    },
+    {
+      "id": "mastercard",
+      "name": "Mastercard",
+      "ticker": "MA",
+      "mono": "Ma",
+      "color": "#EB001B",
+      "hq": "Purchase, NY",
+      "domains": [
+        "fintech"
+      ],
+      "blurb": "Global payments network."
+    },
+    {
+      "id": "meta",
+      "name": "Meta",
+      "ticker": "META",
+      "mono": "Me",
+      "color": "#0866FF",
+      "palette": [
+        "#0866FF",
+        "#0A7CFF",
+        "#ffffff"
+      ],
+      "pattern": "orbit",
+      "hq": "Menlo Park, CA",
+      "domains": [
+        "social",
+        "ai"
+      ],
+      "blurb": "Facebook, Instagram, WhatsApp and Llama models.",
+      "icon": "meta"
+    },
+    {
+      "id": "microchip",
+      "name": "Microchip Technology",
+      "ticker": "MCHP",
+      "mono": "Mc",
+      "color": "#E4002B",
+      "hq": "Chandler, AZ",
+      "domains": [
+        "chips"
+      ],
+      "blurb": "Microcontrollers and embedded semiconductors."
+    },
+    {
+      "id": "micron",
+      "name": "Micron Technology",
+      "ticker": "MU",
+      "mono": "Mu",
+      "color": "#005DAA",
+      "hq": "Boise, ID",
+      "domains": [
+        "chips"
+      ],
+      "blurb": "Memory and storage \u2014 DRAM and NAND flash."
+    },
+    {
+      "id": "microsoft",
+      "name": "Microsoft",
+      "ticker": "MSFT",
+      "mono": "Ms",
+      "color": "#0A72C4",
+      "palette": [
+        "#F25022",
+        "#7FBA00",
+        "#00A4EF",
+        "#FFB900"
+      ],
+      "pattern": "quad",
+      "hq": "Redmond, WA",
+      "domains": [
+        "cloud",
+        "ai",
+        "enterprise"
+      ],
+      "blurb": "Azure cloud, Windows, Office and Copilot."
+    },
+    {
+      "id": "mongodb",
+      "name": "MongoDB",
+      "ticker": "MDB",
+      "mono": "Mo",
+      "color": "#00684A",
+      "hq": "New York, NY",
+      "domains": [
+        "cloud",
+        "enterprise"
+      ],
+      "blurb": "Developer data platform (document database).",
+      "icon": "mongodb"
+    },
+    {
+      "id": "netflix",
+      "name": "Netflix",
+      "ticker": "NFLX",
+      "mono": "Nf",
+      "color": "#E50914",
+      "palette": [
+        "#E50914",
+        "#831010"
+      ],
+      "pattern": "bars",
+      "hq": "Los Gatos, CA",
+      "domains": [
+        "social"
+      ],
+      "blurb": "Streaming media and original content at scale.",
+      "icon": "netflix"
+    },
+    {
+      "id": "nvidia",
+      "name": "NVIDIA",
+      "ticker": "NVDA",
+      "mono": "Nv",
+      "color": "#76B900",
+      "palette": [
+        "#76B900",
+        "#0B0E14",
+        "#ffffff"
+      ],
+      "pattern": "orbit",
+      "hq": "Santa Clara, CA",
+      "domains": [
+        "chips",
+        "ai"
+      ],
+      "blurb": "GPUs and CUDA \u2014 the compute engine of the AI boom.",
+      "icon": "nvidia"
+    },
+    {
+      "id": "okta",
+      "name": "Okta",
+      "ticker": "OKTA",
+      "mono": "Ok",
+      "color": "#007DC1",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "enterprise",
+        "cloud"
+      ],
+      "blurb": "Identity and access management.",
+      "icon": "okta"
+    },
+    {
+      "id": "onsemi",
+      "name": "onsemi",
+      "ticker": "ON",
+      "mono": "on",
+      "color": "#0072CE",
+      "hq": "Scottsdale, AZ",
+      "domains": [
+        "chips"
+      ],
+      "blurb": "Power and sensing semiconductors."
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "ticker": "\u2014",
+      "mono": "Oa",
+      "color": "#10A37F",
+      "palette": [
+        "#10A37F",
+        "#ffffff"
+      ],
+      "pattern": "spark",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "ai"
+      ],
+      "blurb": "Frontier models \u2014 GPT and the ChatGPT platform."
+    },
+    {
+      "id": "oracle",
+      "name": "Oracle",
+      "ticker": "ORCL",
+      "mono": "Or",
+      "color": "#C74634",
+      "palette": [
+        "#C74634",
+        "#ffffff"
+      ],
+      "pattern": "wordmark",
+      "hq": "Austin, TX",
+      "domains": [
+        "cloud",
+        "enterprise"
+      ],
+      "blurb": "Databases, OCI cloud and enterprise apps."
     },
     {
       "id": "palantir",
@@ -564,21 +856,156 @@
       "icon": "palantir"
     },
     {
-      "id": "openai",
-      "name": "OpenAI",
-      "ticker": "\u2014",
-      "mono": "Oa",
-      "color": "#10A37F",
+      "id": "palo-alto-networks",
+      "name": "Palo Alto Networks",
+      "ticker": "PANW",
+      "mono": "Pa",
+      "color": "#FA582D",
+      "hq": "Santa Clara, CA",
+      "domains": [
+        "enterprise"
+      ],
+      "blurb": "Enterprise network and cloud security.",
+      "icon": "paloaltonetworks"
+    },
+    {
+      "id": "paypal",
+      "name": "PayPal",
+      "ticker": "PYPL",
+      "mono": "Pp",
+      "color": "#003087",
       "palette": [
-        "#10A37F",
+        "#003087",
+        "#009CDE",
         "#ffffff"
       ],
-      "pattern": "spark",
+      "pattern": "orbit",
+      "hq": "San Jose, CA",
+      "domains": [
+        "fintech"
+      ],
+      "blurb": "Digital payments, checkout and Venmo.",
+      "icon": "paypal"
+    },
+    {
+      "id": "pinterest",
+      "name": "Pinterest",
+      "ticker": "PINS",
+      "mono": "Pi",
+      "color": "#E60023",
       "hq": "San Francisco, CA",
       "domains": [
-        "ai"
+        "social"
       ],
-      "blurb": "Frontier models \u2014 GPT and the ChatGPT platform."
+      "blurb": "Visual discovery and bookmarking.",
+      "icon": "pinterest"
+    },
+    {
+      "id": "qualcomm",
+      "name": "Qualcomm",
+      "ticker": "QCOM",
+      "mono": "Qc",
+      "color": "#3253DC",
+      "palette": [
+        "#3253DC",
+        "#5E2CA5"
+      ],
+      "pattern": "hex",
+      "hq": "San Diego, CA",
+      "domains": [
+        "chips"
+      ],
+      "blurb": "Mobile SoCs, modems and Snapdragon platforms.",
+      "icon": "qualcomm"
+    },
+    {
+      "id": "reddit",
+      "name": "Reddit",
+      "ticker": "RDDT",
+      "mono": "Rd",
+      "color": "#FF4500",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "social"
+      ],
+      "blurb": "Community discussion platform.",
+      "icon": "reddit"
+    },
+    {
+      "id": "robinhood",
+      "name": "Robinhood Markets",
+      "ticker": "HOOD",
+      "mono": "Rh",
+      "color": "#00C805",
+      "hq": "Menlo Park, CA",
+      "domains": [
+        "fintech"
+      ],
+      "blurb": "Commission-free investing and trading.",
+      "icon": "robinhood"
+    },
+    {
+      "id": "roblox",
+      "name": "Roblox",
+      "ticker": "RBLX",
+      "mono": "Rb",
+      "color": "#E2231A",
+      "hq": "San Mateo, CA",
+      "domains": [
+        "social",
+        "commerce"
+      ],
+      "blurb": "Online game platform and creation tools.",
+      "icon": "roblox"
+    },
+    {
+      "id": "salesforce",
+      "name": "Salesforce",
+      "ticker": "CRM",
+      "mono": "Sf",
+      "color": "#00A1E0",
+      "palette": [
+        "#00A1E0",
+        "#ffffff"
+      ],
+      "pattern": "ring",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "enterprise",
+        "cloud"
+      ],
+      "blurb": "CRM leader; Data Cloud and Einstein AI."
+    },
+    {
+      "id": "seagate",
+      "name": "Seagate Technology",
+      "ticker": "STX",
+      "mono": "Sg",
+      "color": "#6EBE49",
+      "hq": "Fremont, CA",
+      "domains": [
+        "chips",
+        "enterprise"
+      ],
+      "blurb": "Mass-capacity data-storage and hard drives.",
+      "icon": "seagate"
+    },
+    {
+      "id": "servicenow",
+      "name": "ServiceNow",
+      "ticker": "NOW",
+      "mono": "Sv",
+      "color": "#62D84E",
+      "palette": [
+        "#62D84E",
+        "#0B3D2E"
+      ],
+      "pattern": "hex",
+      "hq": "Santa Clara, CA",
+      "domains": [
+        "enterprise"
+      ],
+      "blurb": "Enterprise workflow and IT service management."
     },
     {
       "id": "snap",
@@ -599,6 +1026,37 @@
       "icon": "snapchat"
     },
     {
+      "id": "snowflake",
+      "name": "Snowflake",
+      "ticker": "SNOW",
+      "mono": "Sn",
+      "color": "#29B5E8",
+      "palette": [
+        "#29B5E8",
+        "#ffffff"
+      ],
+      "pattern": "spark",
+      "hq": "Bozeman, MT",
+      "domains": [
+        "cloud",
+        "enterprise"
+      ],
+      "blurb": "Cloud data warehouse and data-sharing network.",
+      "icon": "snowflake"
+    },
+    {
+      "id": "sofi",
+      "name": "SoFi Technologies",
+      "ticker": "SOFI",
+      "mono": "So",
+      "color": "#00A9CE",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "fintech"
+      ],
+      "blurb": "Digital personal finance and banking."
+    },
+    {
       "id": "stripe",
       "name": "Stripe",
       "ticker": "\u2014",
@@ -615,6 +1073,153 @@
       ],
       "blurb": "Developer-first payments and financial infrastructure.",
       "icon": "stripe"
+    },
+    {
+      "id": "tesla",
+      "name": "Tesla",
+      "ticker": "TSLA",
+      "mono": "Te",
+      "color": "#CC0000",
+      "palette": [
+        "#CC0000",
+        "#111111"
+      ],
+      "pattern": "chevron",
+      "hq": "Austin, TX",
+      "domains": [
+        "ai",
+        "chips"
+      ],
+      "blurb": "EVs, autonomy (FSD) and the Dojo training silicon.",
+      "icon": "tesla"
+    },
+    {
+      "id": "texas-instruments",
+      "name": "Texas Instruments",
+      "ticker": "TXN",
+      "mono": "TI",
+      "color": "#CC0000",
+      "hq": "Dallas, TX",
+      "domains": [
+        "chips"
+      ],
+      "blurb": "Analog and embedded processing semiconductors."
+    },
+    {
+      "id": "twilio",
+      "name": "Twilio",
+      "ticker": "TWLO",
+      "mono": "Tw",
+      "color": "#F22F46",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "cloud",
+        "enterprise"
+      ],
+      "blurb": "Cloud communications APIs."
+    },
+    {
+      "id": "uber",
+      "name": "Uber",
+      "ticker": "UBER",
+      "mono": "Ub",
+      "color": "#000000",
+      "palette": [
+        "#000000",
+        "#9AA0A6"
+      ],
+      "pattern": "grid",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "commerce",
+        "ai"
+      ],
+      "blurb": "Mobility and delivery marketplaces with routing AI.",
+      "icon": "uber"
+    },
+    {
+      "id": "unity",
+      "name": "Unity Technologies",
+      "ticker": "U",
+      "mono": "Un",
+      "color": "#222C37",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "enterprise"
+      ],
+      "blurb": "Real-time 3D and game development engine.",
+      "icon": "unity"
+    },
+    {
+      "id": "visa",
+      "name": "Visa",
+      "ticker": "V",
+      "mono": "Vi",
+      "color": "#1A1F71",
+      "palette": [
+        "#1A1F71",
+        "#F7B600"
+      ],
+      "pattern": "split",
+      "hq": "San Francisco, CA",
+      "domains": [
+        "fintech"
+      ],
+      "blurb": "Global card network and payment processing.",
+      "icon": "visa"
+    },
+    {
+      "id": "western-digital",
+      "name": "Western Digital",
+      "ticker": "WDC",
+      "mono": "WD",
+      "color": "#2C5697",
+      "hq": "San Jose, CA",
+      "domains": [
+        "chips",
+        "enterprise"
+      ],
+      "blurb": "Hard drives and flash data-storage devices."
+    },
+    {
+      "id": "workday",
+      "name": "Workday",
+      "ticker": "WDAY",
+      "mono": "Wd",
+      "color": "#0875E1",
+      "hq": "Pleasanton, CA",
+      "domains": [
+        "enterprise",
+        "cloud"
+      ],
+      "blurb": "Cloud HR and finance software."
+    },
+    {
+      "id": "zoom",
+      "name": "Zoom",
+      "ticker": "ZM",
+      "mono": "Zm",
+      "color": "#2D8CFF",
+      "hq": "San Jose, CA",
+      "domains": [
+        "enterprise",
+        "cloud"
+      ],
+      "blurb": "Video communications and collaboration.",
+      "icon": "zoom"
+    },
+    {
+      "id": "zscaler",
+      "name": "Zscaler",
+      "ticker": "ZS",
+      "mono": "Zs",
+      "color": "#0075BE",
+      "hq": "San Jose, CA",
+      "domains": [
+        "enterprise",
+        "cloud"
+      ],
+      "blurb": "Cloud security (zero-trust access)."
     }
   ]
 }

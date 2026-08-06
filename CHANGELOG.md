@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- TechAtlas landing page: added a **Rows ⇄ List view toggle** with a **live
+  search** box (filters by name/ticker in both views). The list view is a
+  simple, sortable, keyboard-accessible directory of every company; clicking a
+  row opens the same deep-linked detail tab. Responsive down to mobile.
+- TechAtlas seed data: expanded the curated dataset from 31 to **78 real,
+  U.S.-headquartered public companies** (verified name, ticker, HQ, domain
+  only — employee counts and leadership remain `unknown` until the SEC pipeline
+  fills them authoritatively). Added 26 more brand logos via simple-icons;
+  companies without an available mark render a clean monogram tile.
 - TechAtlas web app: replaced the 3D WebGL constellation with a simple,
   fast landing page — **Netflix-style rows of company logos, one row per
   domain, auto-scrolling slowly** (pause on hover; static + swipeable under

@@ -15,16 +15,27 @@ import {
   siApple, siGoogle, siMeta, siNvidia, siTesla, siNetflix, siIntel, siAmd,
   siQualcomm, siBroadcom, siCisco, siPaypal, siCoinbase, siVisa, siUber,
   siAirbnb, siDoordash, siSnowflake, siDatabricks, siPalantir, siSnapchat, siStripe,
+  siSeagate, siDell, siHp, siAutodesk, siIntuit, siDatadog, siMongodb, siCloudflare,
+  siOkta, siPaloaltonetworks, siFortinet, siGitlab, siHubspot, siDropbox, siBox,
+  siAsana, siDigitalocean, siUnity, siAkamai, siReddit, siPinterest, siRoblox,
+  siEbay, siZoom, siLyft, siRobinhood,
 } from "simple-icons";
 
 const ICONS = {};
 [siApple, siGoogle, siMeta, siNvidia, siTesla, siNetflix, siIntel, siAmd,
  siQualcomm, siBroadcom, siCisco, siPaypal, siCoinbase, siVisa, siUber,
- siAirbnb, siDoordash, siSnowflake, siDatabricks, siPalantir, siSnapchat, siStripe]
+ siAirbnb, siDoordash, siSnowflake, siDatabricks, siPalantir, siSnapchat, siStripe,
+ siSeagate, siDell, siHp, siAutodesk, siIntuit, siDatadog, siMongodb, siCloudflare,
+ siOkta, siPaloaltonetworks, siFortinet, siGitlab, siHubspot, siDropbox, siBox,
+ siAsana, siDigitalocean, siUnity, siAkamai, siReddit, siPinterest, siRoblox,
+ siEbay, siZoom, siLyft, siRobinhood]
   .forEach((i) => { ICONS[i.slug] = i; });
 
 const app = document.getElementById("app");
 let DOMAIN_BY_ID = {};
+let DATA = { domains: [], companies: [] };
+let VIEW = "rows";   // "rows" | "list"
+let QUERY = "";
 
 /* ---------- helpers ---------- */
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
@@ -75,10 +86,36 @@ function rail(companies, index) {
 }
 
 /* ---------- home ---------- */
-function renderHome(data) {
-  document.title = "TechAtlas — U.S. Companies by Domain";
-  const rows = data.domains.map((d, i) => {
-    const companies = data.companies.filter((c) => (c.domains || []).includes(d.id));
+const matches = (c, q) => !q
+  || String(c.name).toLowerCase().includes(q)
+  || String(c.ticker || "").toLowerCase().includes(q);
+
+function listItem(c) {
+  const doms = (c.domains || []).map((id) => DOMAIN_BY_ID[id]?.label || id).join(" · ");
+  return `<a class="litem" href="?company=${encodeURIComponent(c.id)}" target="_blank" rel="noopener">
+    <span class="sw" style="background:${esc(tileBg(c))}">${logoInner(c)}</span>
+    <span class="li-name">${esc(c.name)}${c.ticker ? ` <span class="li-tkr">${esc(c.ticker)}</span>` : ""}</span>
+    <span class="li-dom">${esc(doms)}</span>
+    <span class="li-hq">${esc(c.hq || "")}</span>
+  </a>`;
+}
+
+function renderContent() {
+  const q = QUERY.trim().toLowerCase();
+  const box = document.getElementById("home-content");
+  const count = document.getElementById("home-count");
+  const pool = DATA.companies.filter((c) => matches(c, q));
+  if (count) count.textContent = `${pool.length} compan${pool.length === 1 ? "y" : "ies"}`;
+
+  if (VIEW === "list") {
+    const items = [...pool].sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+    box.innerHTML = items.length
+      ? `<div class="list">${items.map(listItem).join("")}</div>`
+      : `<p class="empty">No companies match “${esc(q)}”.</p>`;
+    return;
+  }
+  const rows = DATA.domains.map((d, i) => {
+    const companies = pool.filter((c) => (c.domains || []).includes(d.id));
     if (!companies.length) return "";
     return `<section class="row">
       <div class="row-head">
@@ -88,15 +125,45 @@ function renderHome(data) {
       ${rail(companies, i)}
     </section>`;
   }).join("");
+  box.innerHTML = `<div class="rows">${rows || `<p class="empty">No companies match “${esc(q)}”.</p>`}</div>`;
+}
 
+function renderHome() {
+  document.title = "TechAtlas — U.S. Companies by Domain";
   app.innerHTML = `
     <section class="hero">
       <div class="eyebrow">U.S. companies · by domain</div>
       <h1>The companies shaping <em>U.S. technology</em>.</h1>
-      <p class="sub">Browse by industry domain. Pick a company to see its domains, employee
-      tier, and leadership — all sourced from authoritative filings.</p>
+      <p class="sub">Browse by industry domain, or switch to a searchable list. Pick a company
+      to see its domains, employee tier, and leadership — sourced from authoritative filings.</p>
     </section>
-    <div class="rows">${rows || `<p class="empty">No companies to show yet.</p>`}</div>`;
+    <div class="toolbar">
+      <div class="toggle" role="tablist" aria-label="View mode">
+        <button id="view-rows" role="tab" aria-selected="${VIEW === "rows"}" class="${VIEW === "rows" ? "on" : ""}">Rows</button>
+        <button id="view-list" role="tab" aria-selected="${VIEW === "list"}" class="${VIEW === "list" ? "on" : ""}">List</button>
+      </div>
+      <div class="search">
+        <input id="home-search" type="search" placeholder="Search companies…" aria-label="Search companies" value="${esc(QUERY)}">
+      </div>
+      <span class="home-count" id="home-count" aria-live="polite"></span>
+    </div>
+    <div id="home-content"></div>`;
+
+  const setView = (v) => {
+    VIEW = v;
+    document.getElementById("view-rows").classList.toggle("on", v === "rows");
+    document.getElementById("view-list").classList.toggle("on", v === "list");
+    document.getElementById("view-rows").setAttribute("aria-selected", String(v === "rows"));
+    document.getElementById("view-list").setAttribute("aria-selected", String(v === "list"));
+    renderContent();
+  };
+  document.getElementById("view-rows").addEventListener("click", () => setView("rows"));
+  document.getElementById("view-list").addEventListener("click", () => setView("list"));
+  document.getElementById("home-search").addEventListener("input", (e) => {
+    QUERY = e.target.value;
+    renderContent();
+  });
+  renderContent();
 }
 
 /* ---------- detail (new tab) ---------- */
@@ -197,7 +264,8 @@ async function load() {
   }
   data.domains = data.domains || [];
   data.companies = data.companies || [];
+  DATA = data;
   DOMAIN_BY_ID = Object.fromEntries(data.domains.map((d) => [d.id, d]));
   const id = new URLSearchParams(location.search).get("company");
-  if (id) renderDetail(data, id); else renderHome(data);
+  if (id) renderDetail(data, id); else renderHome();
 })();
