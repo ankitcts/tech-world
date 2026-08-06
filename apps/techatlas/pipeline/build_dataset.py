@@ -120,24 +120,31 @@ def _refresh_spine(client, companies_repo, now_iso, errors) -> tuple[int, bool]:
     return inserts, capped
 
 
-def _store_raw(raw_repo, company_record, cik, filing, content, content_type, now_iso, counts):
-    """Persist the raw fetched filing (for later LLM/RAG use). Never fabricates.
+def _store_full_raw() -> bool:
+    """Whether to persist full filing text/bytes (heavy) vs. a URL reference.
 
-    Always stores LLM-ready ``text`` (cleaned for HTML); keeps the original bytes
-    in ``raw`` only when small enough to stay well under MongoDB's 16 MB doc cap,
-    flagging both truncation cases rather than silently dropping data.
+    Defaults to False so the DB stays small (free-tier friendly). The filing URL
+    is permanent, so the RAG stage can re-fetch on demand. Set
+    ``TECHATLAS_STORE_FULL_RAW=1`` only when the cluster has room.
     """
-    if raw_repo is None or not content:
+    return os.environ.get("TECHATLAS_STORE_FULL_RAW", "").strip().lower() in (
+        "1", "true", "yes", "on")
+
+
+def _store_raw(refs_repo, company_record, cik, filing, content, content_type,
+               now_iso, counts, store_full):
+    """Persist a filing **reference** (URL + metadata) for later LLM/RAG re-fetch.
+
+    Full cleaned ``text`` + original ``raw`` bytes are stored only when
+    ``store_full`` is set — otherwise we keep just enough to re-fetch from SEC on
+    demand, so the DB stays tiny. Never fabricates.
+    """
+    if refs_repo is None:
         return
     accession = filing.get("accession") or ""
     if not accession:
         return
-    text = edgar.visible_text(content) if content_type == "html" else content
-    text_truncated = len(text) > TEXT_MAX_BYTES
-    if text_truncated:
-        text = text[:TEXT_MAX_BYTES]
-    raw_stored = len(content) <= RAW_MAX_BYTES
-    raw_repo.upsert({
+    doc = {
         "id": accession,
         "company_id": company_record["id"],
         "cik": f"{int(cik):010d}" if cik else None,
@@ -147,17 +154,25 @@ def _store_raw(raw_repo, company_record, cik, filing, content, content_type, now
         "url": filing.get("url"),
         "as_of": filing.get("report_date") or filing.get("filing_date") or None,
         "content_type": content_type,
-        "byte_size": len(content),
-        "text": text,
-        "text_truncated": text_truncated,
-        "raw": content if raw_stored else None,
-        "raw_stored": raw_stored,
+        "byte_size": len(content) if content else 0,
+        "has_text": False,
         "fetched_at": now_iso,
-    })
-    counts["raw_stored"] = counts.get("raw_stored", 0) + 1
+    }
+    if store_full and content:
+        text = edgar.visible_text(content) if content_type == "html" else content
+        text_truncated = len(text) > TEXT_MAX_BYTES
+        if text_truncated:
+            text = text[:TEXT_MAX_BYTES]
+        doc["text"] = text
+        doc["text_truncated"] = text_truncated
+        doc["raw"] = content if len(content) <= RAW_MAX_BYTES else None
+        doc["raw_stored"] = doc["raw"] is not None
+        doc["has_text"] = True
+    refs_repo.upsert(doc)
+    counts["filings_stored"] = counts.get("filings_stored", 0) + 1
 
 
-def _enrich_one(company_record, client, raw_repo, now_iso, errors, counts):
+def _enrich_one(company_record, client, raw_repo, now_iso, errors, counts, store_full):
     """Enrich one company from its SEC filings; persist the raw docs fetched."""
     cik = company_record.get("cik")
     if not cik:
@@ -177,7 +192,7 @@ def _enrich_one(company_record, client, raw_repo, now_iso, errors, counts):
             errors.append(f"{company_record['id']} 10-K fetch: {exc}")
             html = None
         if html:
-            _store_raw(raw_repo, company_record, cik, tenk, html, "html", now_iso, counts)
+            _store_raw(raw_repo, company_record, cik, tenk, html, "html", now_iso, counts, store_full)
             found = extract_employees(
                 html, as_of=tenk.get("report_date") or None,
                 source_url=tenk.get("url"), accession=tenk.get("accession") or None,
@@ -207,7 +222,7 @@ def _enrich_one(company_record, client, raw_repo, now_iso, errors, counts):
                 xml = None
             if xml:
                 _store_raw(raw_repo, company_record, cik,
-                           {**own, "url": own.get("url") or raw_url}, xml, "xml", now_iso, counts)
+                           {**own, "url": own.get("url") or raw_url}, xml, "xml", now_iso, counts, store_full)
                 leadership = extract_leadership(
                     xml, source_url=own.get("url") or raw_url,
                     accession=own.get("accession") or None, as_of=own.get("filing_date") or None)
@@ -258,7 +273,8 @@ def run_refresh(db, *, batch_size: int | None = None, now_iso: str,
         repo.ensure_indexes()
 
     errors: list[str] = []
-    counts = {"employees_found": 0, "leadership_found": 0, "unknown_tier": 0, "raw_stored": 0}
+    counts = {"employees_found": 0, "leadership_found": 0, "unknown_tier": 0, "filings_stored": 0}
+    store_full = _store_full_raw()
     client = SecClient()
 
     # 1. Spine (cheap, full).
@@ -278,7 +294,7 @@ def run_refresh(db, *, batch_size: int | None = None, now_iso: str,
                 break
             seen.add(company_record.get("id"))
             try:
-                enrichment = _enrich_one(company_record, client, raw_repo, now_iso, errors, counts)
+                enrichment = _enrich_one(company_record, client, raw_repo, now_iso, errors, counts, store_full)
                 if enrichment:
                     companies_repo.upsert(enrichment)
                     enriched += 1
@@ -297,7 +313,8 @@ def run_refresh(db, *, batch_size: int | None = None, now_iso: str,
         "employees_found": counts["employees_found"],
         "leadership_found": counts["leadership_found"],
         "unknown_tier": counts["unknown_tier"],
-        "raw_stored": counts["raw_stored"],
+        "filings_stored": counts["filings_stored"],
+        "store_full_raw": store_full,
         "unenriched_remaining": unenriched_remaining,
         "capped": capped,
         "batch_size": batch_size,

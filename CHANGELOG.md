@@ -7,16 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Raw-filing storage is now **reference-only by default** to stay within
+  free-tier database quotas: the pipeline stores just the filing **URL +
+  metadata** (`raw_filings`), not the full text/bytes, and the RAG stage
+  re-fetches from the permanent SEC URL on demand. Set
+  `TECHATLAS_STORE_FULL_RAW=1` to persist cleaned text + raw bytes when the
+  cluster has room. Run summary reports `filings_stored` + `store_full_raw`.
+- `/api/refresh?purge=raw_filings` (secret-gated, whitelisted) drops the bulky
+  collection to free space — useful after hitting a storage quota, since deletes
+  are permitted even when writes are quota-blocked.
+
 ### Fixed
 - Live-data UI regressions on the landing page: (1) brand **logos** now render
   for known companies regardless of source — the curated seed is merged with the
   live SEC data, so familiar companies keep their logo/blurb/domains and are
   *enriched* with live SEC employee tiers + leadership (matched by ticker), while
   the SEC long-tail is added on top; (2) the curated companies no longer
-  "disappear" when live data loads; (3) the marquee rows **always scroll** now
-  (each row is padded past ~1.6 viewports so the loop always has travel), and
-  sparse SIC domains are hidden until they have ≥3 companies to avoid dozens of
-  one-company rows during backfill.
+  "disappear" when live data loads; (3) rows **loop only when their companies
+  overflow the visible width** — a row that fits stays static — and sparse SIC
+  domains are hidden until they have ≥3 companies to avoid dozens of one-company
+  rows during backfill.
 - Vercel build failure ("No python entrypoint found"): moved the `scraper/`
   toolkit's dependency list from the repo-root `requirements.txt` to
   `scraper/requirements.txt`. A root `requirements.txt` made Vercel's newer

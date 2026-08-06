@@ -157,16 +157,21 @@ function card(c) {
 }
 
 function rail(companies, index) {
-  // Repeat the list until one "half" is wider than ~1.6 viewports, so the
-  // translateX(-50%) loop always has real travel — every row scrolls, even a
-  // domain with only a couple of companies.
-  const CARD = 162; // card width + gap
-  const minItems = Math.max(12, Math.ceil((window.innerWidth * 1.6) / CARD));
-  let list = companies.slice();
-  if (list.length) while (list.length < minItems) list = list.concat(companies);
-  const half = list.map(card).join("");
+  const CARD = 162; // card width + gap (px)
+  const pad = Math.min(32, Math.max(16, window.innerWidth * 0.04));
+  const containerW = Math.min(window.innerWidth, 1240) - 2 * pad;
+  const contentW = companies.length * CARD;
+
+  // Fits within the visible row → render once, no loop (static).
+  if (contentW <= containerW) {
+    return `<div class="rail is-static">
+      <div class="track is-static">${companies.map(card).join("")}</div>
+    </div>`;
+  }
+  // Overflows the visible width → seamless marquee (two copies, translateX(-50%)).
+  const half = companies.map(card).join("");
   const dir = index % 2 ? "rev" : "fwd";
-  const dur = Math.round(list.length * 2.6) + 20; // steady speed regardless of length
+  const dur = Math.round(companies.length * 3) + 16;
   return `<div class="rail" data-dir="${dir}" style="--dur:${dur}s">
     <div class="track">${half}${half}</div>
   </div>`;
