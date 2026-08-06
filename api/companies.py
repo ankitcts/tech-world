@@ -48,9 +48,10 @@ class handler(BaseHTTPRequestHandler):
         payload = json.dumps(data).encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "application/json; charset=utf-8")
-        # CDN-cache the daily snapshot: fresh for 6h, serve-stale for a day.
+        # Short CDN cache so refreshes show up quickly (the pipeline updates
+        # MongoDB continuously): fresh for 30s, serve-stale up to 5min.
         self.send_header(
-            "Cache-Control", "public, s-maxage=21600, stale-while-revalidate=86400")
+            "Cache-Control", "public, s-maxage=30, stale-while-revalidate=300")
         self.send_header("X-Data-Source", source)
         self.send_header("Content-Length", str(len(payload)))
         self.end_headers()
