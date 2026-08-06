@@ -99,6 +99,9 @@
   .rail:hover .track,.rail:focus-within .track{animation-play-state:paused}
   @keyframes scroll-l{from{transform:translateX(0)}to{transform:translateX(-50%)}}
   @keyframes scroll-r{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+  /* rows that fit the visible width don't loop */
+  .rail.is-static{-webkit-mask-image:none;mask-image:none}
+  .track.is-static{animation:none;width:auto}
 
   .card{flex:0 0 auto;width:148px;display:flex;flex-direction:column;gap:9px;padding:0;border:0;background:none;
     cursor:pointer;text-align:left}
