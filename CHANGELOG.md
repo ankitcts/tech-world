@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Raw-filing storage is now **reference-only by default** to stay within
+  free-tier database quotas: the pipeline stores just the filing **URL +
+  metadata** (`raw_filings`), not the full text/bytes, and the RAG stage
+  re-fetches from the permanent SEC URL on demand. Set
+  `TECHATLAS_STORE_FULL_RAW=1` to persist cleaned text + raw bytes when the
+  cluster has room. Run summary reports `filings_stored` + `store_full_raw`.
+- `/api/refresh?purge=raw_filings` (secret-gated, whitelisted) drops the bulky
+  collection to free space — useful after hitting a storage quota, since deletes
+  are permitted even when writes are quota-blocked.
+
 ### Fixed
 - Live-data UI regressions on the landing page: (1) brand **logos** now render
   for known companies regardless of source — the curated seed is merged with the

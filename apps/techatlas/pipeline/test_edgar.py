@@ -22,34 +22,48 @@ class _FakeRaw:
         self.docs.append(doc)
 
 
-def test_store_raw_html_cleans_text_and_keeps_small_raw():
+def test_store_raw_reference_only_by_default():
+    # Default (store_full=False): keep only a URL reference + metadata, no text/raw.
     repo, counts = _FakeRaw(), {}
-    html = "<html><body><p>Hello &amp; world</p><script>x=1</script></body></html>"
+    html = "<html><body><p>Hello &amp; world</p></body></html>"
     filing = {"accession": "0001-24-1", "form": "10-K",
               "url": "http://x/10k.htm", "report_date": "2024-12-31"}
     build_dataset._store_raw(repo, {"id": "aapl", "ticker": "AAPL"}, 320193,
-                             filing, html, "html", "2026-01-01T00:00:00Z", counts)
+                             filing, html, "html", "2026-01-01T00:00:00Z", counts, False)
     assert len(repo.docs) == 1
     d = repo.docs[0]
     assert d["id"] == "0001-24-1" and d["company_id"] == "aapl" and d["form"] == "10-K"
-    assert d["cik"] == "0000320193" and d["ticker"] == "AAPL"
+    assert d["cik"] == "0000320193" and d["url"] == "http://x/10k.htm"
+    assert d["as_of"] == "2024-12-31" and d["byte_size"] == len(html)
+    assert d["has_text"] is False and "text" not in d and "raw" not in d
+    assert counts["filings_stored"] == 1
+
+
+def test_store_raw_full_keeps_cleaned_text_and_small_raw():
+    repo, counts = _FakeRaw(), {}
+    html = "<html><body><p>Hello &amp; world</p><script>x=1</script></body></html>"
+    filing = {"accession": "0001-24-1", "form": "10-K", "url": "http://x/10k.htm",
+              "report_date": "2024-12-31"}
+    build_dataset._store_raw(repo, {"id": "aapl", "ticker": "AAPL"}, 320193,
+                             filing, html, "html", "t", counts, True)
+    d = repo.docs[0]
+    assert d["has_text"] is True
     assert "Hello & world" in d["text"] and "<p>" not in d["text"] and "x=1" not in d["text"]
     assert d["raw"] == html and d["raw_stored"] is True
-    assert d["as_of"] == "2024-12-31" and d["fetched_at"] == "2026-01-01T00:00:00Z"
-    assert counts["raw_stored"] == 1
+    assert counts["filings_stored"] == 1
 
 
 def test_store_raw_skips_without_accession():
     repo, counts = _FakeRaw(), {}
-    build_dataset._store_raw(repo, {"id": "x"}, 1, {"accession": ""}, "data", "xml", "t", counts)
+    build_dataset._store_raw(repo, {"id": "x"}, 1, {"accession": ""}, "data", "xml", "t", counts, True)
     assert repo.docs == [] and counts == {}
 
 
-def test_store_raw_drops_oversized_raw_but_keeps_text():
+def test_store_raw_full_drops_oversized_raw_but_keeps_text():
     repo, counts = _FakeRaw(), {}
     big = "a" * (build_dataset.RAW_MAX_BYTES + 10)  # over the raw-bytes cap
     filing = {"accession": "acc", "form": "4", "filing_date": "2025-01-10"}
-    build_dataset._store_raw(repo, {"id": "c", "ticker": "C"}, 5, filing, big, "xml", "t", counts)
+    build_dataset._store_raw(repo, {"id": "c", "ticker": "C"}, 5, filing, big, "xml", "t", counts, True)
     d = repo.docs[0]
     assert d["raw"] is None and d["raw_stored"] is False
     assert d["byte_size"] == len(big)

@@ -72,6 +72,24 @@ class handler(BaseHTTPRequestHandler):
                 })
                 return
 
+        # Maintenance: drop the bulky raw_filings collection to free space
+        # (e.g. after hitting a free-tier storage quota). Whitelisted + secret-
+        # gated. Deletes are permitted even when writes are quota-blocked.
+        purge = (params.get("purge", [""])[0] or "").strip()
+        if purge:
+            allowed = {"raw_filings"}
+            if purge not in allowed:
+                self._send(400, {"ok": False, "error": f"purge allowed only for {sorted(allowed)}"})
+                return
+            try:
+                from apps.techatlas.pipeline.models import get_database
+
+                get_database()[purge].drop()
+                self._send(200, {"ok": True, "purged": purge})
+            except Exception as exc:  # noqa: BLE001
+                self._send(500, {"ok": False, "error": str(exc)})
+            return
+
         try:
             from apps.techatlas.pipeline.build_dataset import run_refresh
             from apps.techatlas.pipeline.models import get_database
