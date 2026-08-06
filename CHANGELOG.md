@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   deps come from `api/requirements.txt`). Updated the one doc reference.
 
 ### Added
+- A logo for **every** company, not just the curated set: tiles now layer a real
+  brand SVG (curated) → a **logo-by-ticker image** (keyless CDN, with a second
+  source as fallback) → a monogram, so the SEC long-tail gets logos too, degrading
+  gracefully when none exists.
 - `/api/refresh` accepts the `CRON_SECRET` via a `?key=` query param (in addition
   to the `Authorization: Bearer` header the cron sends), so a run can be triggered
   manually from a browser.

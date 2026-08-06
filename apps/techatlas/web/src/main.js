@@ -117,18 +117,40 @@ function initials(c) {
 }
 const tileBg = (c) => c.color || curatedFor(c)?.color || fallbackColor(c.name);
 
-function logoInner(c) {
-  const fg = ink(tileBg(c));
+// Logo-by-ticker image sources (keyless), tried in order, then the monogram.
+const LOGO_SRC = (t) => `https://assets.parqet.com/logos/symbol/${encodeURIComponent(t)}?format=png`;
+const LOGO_ALT = (t) => `https://financialmodelingprep.com/image-stock/${encodeURIComponent(t)}.png`;
+// On error: try the fallback source once, then give up (monogram behind shows).
+const LOGO_ONERR = "if(!this.dataset.f){this.dataset.f=1;this.src=this.dataset.alt}else{this.remove()}";
+
+// Returns {bg, inner} for a company tile. Priority: real brand SVG (curated) →
+// logo-by-ticker image with a monogram behind it as fallback → monogram.
+function tileParts(c) {
   const slug = c.icon || curatedFor(c)?.icon;
   const icon = slug && ICONS[slug];
-  if (icon) return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="${fg}"><path d="${esc(icon.path)}"/></svg>`;
-  return `<span class="mono" style="color:${fg}">${esc(initials(c))}</span>`;
+  if (icon) {
+    const bg = tileBg(c);
+    return { bg, inner: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="${ink(bg)}"><path d="${esc(icon.path)}"/></svg>` };
+  }
+  const t = c.ticker ? String(c.ticker).toUpperCase() : "";
+  if (t) {
+    const bg = "#FFFFFF"; // light tile so fetched logos read
+    return { bg, inner:
+      `<span class="mono" style="color:${ink(bg)}">${esc(initials(c))}</span>` +
+      `<img class="logo-img" alt="" loading="lazy" src="${esc(LOGO_SRC(t))}" ` +
+      `data-alt="${esc(LOGO_ALT(t))}" onerror="${LOGO_ONERR}">` };
+  }
+  const bg = tileBg(c);
+  return { bg, inner: `<span class="mono" style="color:${ink(bg)}">${esc(initials(c))}</span>` };
 }
 
+function logoInner(c) { return tileParts(c).inner; }
+
 function card(c) {
+  const { bg, inner } = tileParts(c);
   return `<a class="card" href="?company=${encodeURIComponent(c.id)}" target="_blank" rel="noopener"
              aria-label="${esc(c.name)} — open details in a new tab">
-    <span class="tile" style="background:${esc(tileBg(c))}">${logoInner(c)}</span>
+    <span class="tile" style="background:${esc(bg)}">${inner}</span>
     <span class="name">${esc(c.name)}</span>
     ${c.ticker ? `<span class="tkr">${esc(c.ticker)}</span>` : ""}
   </a>`;
@@ -157,8 +179,9 @@ const matches = (c, q) => !q
 
 function listItem(c) {
   const doms = (c.domains || []).map((id) => DOMAIN_BY_ID[id]?.label || id).join(" · ");
+  const { bg, inner } = tileParts(c);
   return `<a class="litem" href="?company=${encodeURIComponent(c.id)}" target="_blank" rel="noopener">
-    <span class="sw" style="background:${esc(tileBg(c))}">${logoInner(c)}</span>
+    <span class="sw" style="background:${esc(bg)}">${inner}</span>
     <span class="li-name">${esc(c.name)}${c.ticker ? ` <span class="li-tkr">${esc(c.ticker)}</span>` : ""}</span>
     <span class="li-dom">${esc(doms)}</span>
     <span class="li-hq">${esc(c.hq || "")}</span>
@@ -288,13 +311,13 @@ function renderDetail(data, id) {
     return;
   }
   document.title = `${c.name} — TechAtlas`;
-  const bg = tileBg(c);
+  const { bg, inner } = tileParts(c);
   const domainList = (c.domains || []).map((did) => esc(DOMAIN_BY_ID[did]?.label || did)).join(", ") || "—";
 
   app.innerHTML = `<article class="detail">
     <a class="back" href="./">← All companies</a>
     <div class="detail-top">
-      <span class="big" style="background:${esc(bg)}">${logoInner(c)}</span>
+      <span class="big" style="background:${esc(bg)}">${inner}</span>
       <div>
         <h1>${esc(c.name)}</h1>
         ${c.ticker ? `<div class="tkr">${esc(c.ticker)}</div>` : ""}
