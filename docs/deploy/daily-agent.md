@@ -76,7 +76,7 @@ ever assigned to a band from a verified 10-K value.
 ```jsonc
 {
   "id": "aapl", "cik": "0000320193", "name": "Apple Inc.", "ticker": "AAPL",
-  "hq_state": "CA",
+  "hq": "CA",                                 // SEC business address stateOrCountry
   "domains": ["sic-36"],                     // dynamic, from SIC major group
   "sic": "3571", "sic_description": "Electronic Computers",
   "employees": {                              // provenance-wrapped field
@@ -197,7 +197,11 @@ can't be fetched-and-parsed in one invocation:
 ## 8. Rollout order
 
 1. **Foundations (done):** `tiers.py`, `sic.py` + unit tests.
-2. **Stage 1:** EDGAR client, 10-K employee extraction w/ provenance, upsert.
+2. **Stage 1 (done):** `edgar.py` client + pure parsers, 10-K employee
+   extraction and Form 3/4/5 leadership extraction w/ provenance,
+   `build_dataset.run_refresh` (spine + bounded incremental enrichment),
+   `/api/refresh` cron, `vercel.json` crons/includeFiles, offline
+   `test_edgar.py`.
 3. **Serve:** `/api/companies` (live), `/api/stats`; frontend reads the API.
 4. **Cron:** wire `vercel.json` + env; confirm daily green run in `agent_runs`.
 5. **Stage 2 RAG:** ingest + Atlas Vector index + `/api/ask` with citations.

@@ -27,6 +27,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ~hundreds of KB to ~30 KB.
 
 ### Added
+- TechAtlas daily company-data agent — **Stage 1 (fetch + segment + enrich)**:
+  - `apps/techatlas/pipeline/edgar.py` — SEC EDGAR client with a required
+    `SEC_USER_AGENT` (fair-access policy), ~8 req/s throttle and 429/503
+    backoff, plus **pure, offline-testable parsers**: `company_tickers`,
+    `submission`, `latest_filing`, a **conservative** 10-K `extract_employees`
+    (returns `None` rather than guess when no number is explicitly labelled
+    "employees"), and a Form 3/4/5 `extract_leadership` (officer/director
+    records with titles, namespace-insensitive) — every value provenance-tagged.
+  - `apps/techatlas/pipeline/build_dataset.py` — `run_refresh(db, batch_size,
+    now_iso)` orchestration: cheap full **spine** upsert from
+    `company_tickers.json` (never clobbers enriched fields) + **bounded
+    incremental enrichment** of the stalest companies (10-K headcount → tier,
+    Forms 3/4/5 → leadership), then recomputes the dynamic **domains**
+    collection from the SIC data actually present. Env-driven
+    (`TECHATLAS_BATCH_SIZE`, `TECHATLAS_SPINE_CAP`); per-run cap surfaced in the
+    summary and `agent_runs`.
+  - `api/refresh.py` — Vercel Cron serverless function (`/api/refresh`) that
+    connects to MongoDB and runs the refresh; requires
+    `Authorization: Bearer $CRON_SECRET` when that env var is set.
+  - `apps/techatlas/pipeline/models.py` — added `AgentRunRepository`
+    (`agent_runs` collection: run log + batch cursor) and `CompanyRepository`
+    `spine_upsert`/`stalest_for_enrichment` helpers (identity vs. enrichment
+    fields kept separate so the daily spine pass never overwrites verified data).
+  - `vercel.json` — daily cron (`0 6 * * *`) on `/api/refresh` and a `functions`
+    `includeFiles` glob so the cross-directory pipeline modules + seed are
+    bundled with the Python API functions.
+  - `api/requirements.txt` — `requests`, `beautifulsoup4`, `lxml`,
+    `pymongo[srv]` (dnspython for `mongodb+srv://`).
+  - `apps/techatlas/pipeline/test_edgar.py` — offline unit tests (no network)
+    over inline 10-K/Form-4/submission fixtures: employee-regex incl.
+    no-match→`None` and 1.6M-employee cases, officer/director XML parsing, and
+    tier/domain wiring end-to-end.
 - Company detail page **Leadership & board** section (CEO, CTO, other executive
   officers, directors) — rendered from provenance-backed records sourced from
   **SEC filings** (Forms 3/4/5 + DEF 14A), each entry linking to its source.
