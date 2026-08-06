@@ -34,8 +34,21 @@ const ICONS = {};
 const app = document.getElementById("app");
 let DOMAIN_BY_ID = {};
 let DATA = { domains: [], companies: [] };
+let DATA_SOURCE = "static";
 let VIEW = "rows";   // "rows" | "list"
 let QUERY = "";
+
+// Live = served from MongoDB by the daily SEC agent; otherwise the curated seed.
+function sourceBadge() {
+  const live = DATA_SOURCE === "mongo";
+  const label = live ? "Live · MongoDB" : "Sample data · seed";
+  const color = live ? "#2ecc71" : "#E9A23B";
+  const title = live
+    ? "Served live from MongoDB (updated by the daily SEC EDGAR agent)."
+    : "Showing the curated seed. Live data appears once the SEC pipeline has populated MongoDB on Vercel.";
+  return `<span class="src-badge" title="${esc(title)}">
+    <span class="src-dot" style="background:${color}"></span>${esc(label)}</span>`;
+}
 
 /* ---------- helpers ---------- */
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
@@ -132,7 +145,7 @@ function renderHome() {
   document.title = "TechAtlas — U.S. Companies by Domain";
   app.innerHTML = `
     <section class="hero">
-      <div class="eyebrow">U.S. companies · by domain</div>
+      <div class="eyebrow">U.S. companies · by domain ${sourceBadge()}</div>
       <h1>The companies shaping <em>U.S. technology</em>.</h1>
       <p class="sub">Browse by industry domain, or switch to a searchable list. Pick a company
       to see its domains, employee tier, and leadership — sourced from authoritative filings.</p>
@@ -250,7 +263,12 @@ async function load() {
   for (const url of ["/api/companies", "./companies.json"]) {
     try {
       const r = await fetch(url, { cache: "no-store" });
-      if (r.ok) return await r.json();
+      if (r.ok) {
+        const data = await r.json();
+        DATA_SOURCE = r.headers.get("X-Data-Source")
+          || (url.startsWith("/api") ? "api" : "static");
+        return data;
+      }
     } catch { /* try next */ }
   }
   return null;

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `/api/refresh` accepts the `CRON_SECRET` via a `?key=` query param (in addition
+  to the `Authorization: Bearer` header the cron sends), so a run can be triggered
+  manually from a browser.
+- Landing page shows a **data-source badge** ("Live · MongoDB" vs "Sample data ·
+  seed") derived from the `X-Data-Source` response header, so it's obvious whether
+  the site is serving live pipeline data or the curated fallback.
+
 ### Changed
 - TechAtlas landing page: added a **Rows ⇄ List view toggle** with a **live
   search** box (filters by name/ticker in both views). The list view is a
