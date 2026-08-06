@@ -1,0 +1,14 @@
+flowchart TB
+    subgraph tw["tech-world repo"]
+        scraper["scraper/<br/>Python package + CLI<br/>[requests · BeautifulSoup · Playwright]"]
+        agents["\.claude/agents/<br/>Subagents: web-scraper · threed-frontend<br/>responsive-a11y · architecture-diagrams"]
+        skills["\.claude/skills/<br/>Skills: data-management ·<br/>living-docs · adsense-compliance"]
+        hooks["\.claude/hooks/<br/>Gates: doc-reminder · adsense-pre-push ·<br/>responsive-a11y (on-change) · arch-gate"]
+        docs["CHANGELOG.md + docs/<br/>[living documentation & releases]"]
+    end
+
+    agents -- "web-scraper drives" --> scraper
+    hooks -- "nudge / block workflows of" --> agents
+    skills -- "define policies enforced by" --> hooks
+    agents -- "changes recorded in" --> docs
+    skills -- "living-docs maintains" --> docs
