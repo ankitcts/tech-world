@@ -93,6 +93,36 @@ class CompanyRepository:
         """How many companies have never been enriched (``enriched_at`` null/missing)."""
         return self.col.count_documents({"enriched_at": None})
 
+    def missing_logo(self, limit: int) -> list[dict]:
+        """Companies whose logo has never been resolved (``logo_checked_at`` absent).
+
+        Returns just the identity fields the logo resolver needs (id, ticker),
+        oldest/absent check first, so successive runs sweep the backlog.
+        """
+        cur = (
+            self.col.find(
+                {"logo_checked_at": None, "ticker": {"$nin": [None, ""]}},
+                {"_id": 0, "id": 1, "ticker": 1},
+            )
+            .limit(max(0, int(limit)))
+        )
+        return list(cur)
+
+    def set_logo(self, company_id: str, logo_url, source: str, checked_at: str) -> None:
+        """Record a logo-resolution result (``logo_url`` may be ``None`` = a miss).
+
+        Always stamps ``logo_checked_at`` so a resolved *or* not-found company is
+        not retried before every other company has had a first pass.
+        """
+        self.col.update_one(
+            {"id": company_id},
+            {"$set": {
+                "logo_url": logo_url,
+                "logo_source": source if logo_url else None,
+                "logo_checked_at": checked_at,
+            }},
+        )
+
     def by_domain(self, domain_id: str) -> list[dict]:
         return list(self.col.find({"domains": domain_id}, {"_id": 0}))
 

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Official company logos crawled from Wikidata** (`pipeline/logos.py`): each
+  company is resolved by its stock **ticker** (`P249`) to that entity's
+  **official logo** (`P154`, hosted on Wikimedia Commons), so the mark is tied
+  to the real company — not guessed from a ticker-image CDN — and is
+  licensing-clean. The daily `/api/refresh` runs a bounded logo pass
+  (`TECHATLAS_LOGO_BATCH`, default 120) that stamps `logo_url` / `logo_source` /
+  `logo_checked_at`; a ticker with no logo is recorded as a miss (not retried
+  ahead of untouched companies, not fabricated). Run summary reports
+  `logos_found` + `logos_checked`. Needs `WIKIDATA_USER_AGENT` (falls back to
+  `SEC_USER_AGENT`). Frontend logo priority is now: curated simple-icons →
+  resolved `logo_url` (`<img>`, falls back on 404) → broken-logo placeholder.
+
 ### Changed
 - Raw-filing storage is now **reference-only by default** to stay within
   free-tier database quotas: the pipeline stores just the filing **URL +
