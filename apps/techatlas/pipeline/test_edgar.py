@@ -409,6 +409,59 @@ def test_parse_logo_results_skips_missing_logo():
     assert logos.parse_logo_results(data) == {}
 
 
+class _FakeLogoRepo:
+    """In-memory stand-in for CompanyRepository's logo methods."""
+
+    def __init__(self, tickers):
+        self.pending = [{"id": t.lower(), "ticker": t} for t in tickers]
+        self.checked = {}
+
+    def missing_logo(self, limit):
+        out = [c for c in self.pending if c["id"] not in self.checked]
+        return out[:limit]
+
+    def set_logo(self, cid, url, source, checked_at):
+        self.checked[cid] = url
+
+
+class _FakeWikidata:
+    """Resolves every other ticker in a batch (deterministic, offline)."""
+
+    def resolve_logos(self, tickers, **_):
+        return {t: f"https://logo/{t}" for i, t in enumerate(tickers) if i % 2 == 0}
+
+
+def _with_fake_wikidata(fn):
+    orig = build_dataset.WikidataClient
+    build_dataset.WikidataClient = lambda *a, **k: _FakeWikidata()
+    try:
+        return fn()
+    finally:
+        build_dataset.WikidataClient = orig
+
+
+def test_logo_pass_drains_whole_backlog_within_budget():
+    repo = _FakeLogoRepo([f"T{i}" for i in range(10)])
+    counts = {"logos_found": 0, "logos_checked": 0}
+    errors = []
+    ticks = iter(range(100))  # advance 1 per clock() call; deadline far away
+    _with_fake_wikidata(lambda: build_dataset._resolve_logos_pass(
+        repo, "now", errors, counts, 3, deadline=50, clock=lambda: next(ticks)))
+    assert counts["logos_checked"] == 10          # every company checked
+    assert counts["logos_found"] == 7             # half of each page resolved
+    assert errors == []
+
+
+def test_logo_pass_stops_at_deadline():
+    repo = _FakeLogoRepo([f"T{i}" for i in range(30)])
+    counts = {"logos_found": 0, "logos_checked": 0}
+    ticks = iter(range(100))
+    _with_fake_wikidata(lambda: build_dataset._resolve_logos_pass(
+        repo, "now", [], counts, 3, deadline=2, clock=lambda: next(ticks)))
+    # Budget cuts it off well before the 30-company backlog is drained.
+    assert 0 < counts["logos_checked"] < 30
+
+
 # --- runner -----------------------------------------------------------------
 
 def _run():

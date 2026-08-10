@@ -46,7 +46,9 @@ from apps.techatlas.pipeline.tiers import classify_tier
 
 DEFAULT_BATCH_SIZE = 40
 DEFAULT_TIME_BUDGET_S = 45       # per-invocation enrichment budget (serverless-safe)
-DEFAULT_LOGO_BATCH = 300         # companies whose logo we resolve per invocation
+DEFAULT_LOGO_BATCH = 300         # companies whose logo we resolve per page
+DEFAULT_LOGO_TIME_BUDGET_S = 18  # logo-loop budget alongside enrichment (daily run)
+DEFAULT_LOGO_ONLY_BUDGET_S = 45  # logo-loop budget when logos_only skips enrichment
 RAW_MAX_BYTES = 6_000_000        # keep original bytes only under this size
 TEXT_MAX_BYTES = 8_000_000       # cap cleaned text (flagged when truncated)
 
@@ -251,32 +253,43 @@ def _logo_batch() -> int:
     return DEFAULT_LOGO_BATCH
 
 
-def _resolve_logos_pass(companies_repo, now_iso, errors, counts, limit):
+def _resolve_logos_pass(companies_repo, now_iso, errors, counts, page_size,
+                        deadline, clock):
     """Attach official logos (Wikidata P249→P154) to companies missing one.
 
-    Bounded to ``limit`` companies per invocation and resolved in one batched
-    SPARQL request. A ticker that resolves to no logo is still stamped
-    ``logo_checked_at`` (a recorded miss), so the frontend shows the broken-logo
-    placeholder and the company is not retried ahead of untouched ones. Never
-    fabricates: only entity-verified Commons logos are stored.
+    **Time-budgeted loop:** keeps pulling pages of ``page_size`` companies and
+    resolving them until the logo backlog is drained *or* ``deadline`` is hit —
+    so one invocation fills as many logos as it can, and the endpoint's
+    self-continuation finishes the rest. Each page is one batched SPARQL request
+    (chunked internally). A ticker that resolves to no logo is still stamped
+    ``logo_checked_at`` (a recorded miss) so it is not retried ahead of untouched
+    companies. Never fabricates: only entity-verified Commons logos are stored.
     """
-    if limit <= 0:
+    if page_size <= 0:
         return
-    pending = companies_repo.missing_logo(limit)
-    if not pending:
-        return
-    tickers = [c["ticker"] for c in pending if c.get("ticker")]
-    try:
-        resolved = WikidataClient().resolve_logos(tickers)
-    except Exception as exc:  # noqa: BLE001 - logo failures must not fail the run
-        errors.append(f"logos: {exc}")
-        return
-    for c in pending:
-        url = resolved.get(c.get("ticker"))
-        companies_repo.set_logo(c["id"], url, "wikidata:P154", now_iso)
-        if url:
-            counts["logos_found"] = counts.get("logos_found", 0) + 1
-        counts["logos_checked"] = counts.get("logos_checked", 0) + 1
+    client = None
+    while clock() < deadline:
+        pending = companies_repo.missing_logo(page_size)
+        if not pending:
+            break  # backlog drained
+        if client is None:
+            try:
+                client = WikidataClient()
+            except Exception as exc:  # noqa: BLE001 - config/egress issue
+                errors.append(f"logos: {exc}")
+                return
+        tickers = [c["ticker"] for c in pending if c.get("ticker")]
+        try:
+            resolved = client.resolve_logos(tickers)
+        except Exception as exc:  # noqa: BLE001 - logo failures must not fail the run
+            errors.append(f"logos: {exc}")
+            return
+        for c in pending:
+            url = resolved.get(c.get("ticker"))
+            companies_repo.set_logo(c["id"], url, "wikidata:P154", now_iso)
+            if url:
+                counts["logos_found"] = counts.get("logos_found", 0) + 1
+            counts["logos_checked"] = counts.get("logos_checked", 0) + 1
 
 
 def _time_budget_s() -> float:
@@ -287,8 +300,18 @@ def _time_budget_s() -> float:
         return float(DEFAULT_TIME_BUDGET_S)
 
 
+def _logo_time_budget_s(logos_only: bool) -> float:
+    default = DEFAULT_LOGO_ONLY_BUDGET_S if logos_only else DEFAULT_LOGO_TIME_BUDGET_S
+    raw = os.environ.get("TECHATLAS_LOGO_TIME_BUDGET_S")
+    try:
+        return max(3.0, float(raw)) if raw else float(default)
+    except (TypeError, ValueError):
+        return float(default)
+
+
 def run_refresh(db, *, batch_size: int | None = None, now_iso: str,
-                time_budget_s: float | None = None, clock=time.monotonic) -> dict:
+                time_budget_s: float | None = None, clock=time.monotonic,
+                logos_only: bool = False) -> dict:
     """Run one Stage-1 refresh against ``db``; return a summary dict.
 
     Enrichment is **time-budgeted**: it keeps pulling the stalest batch and
@@ -296,6 +319,10 @@ def run_refresh(db, *, batch_size: int | None = None, now_iso: str,
     backlog is drained. Each enriched company's ``enriched_at`` is bumped, so
     successive batches advance oldest→newest without repeating within a run.
     ``clock`` is injectable so tests can drive the loop deterministically.
+
+    ``logos_only`` skips the SEC spine refresh + enrichment entirely and spends
+    the whole budget draining the logo backlog — so a manual "fill all logos"
+    trigger converges fast without waiting on enrichment.
     """
     if batch_size is None:
         batch_size = _batch_size()
@@ -313,39 +340,45 @@ def run_refresh(db, *, batch_size: int | None = None, now_iso: str,
     counts = {"employees_found": 0, "leadership_found": 0, "unknown_tier": 0,
               "filings_stored": 0, "logos_found": 0, "logos_checked": 0}
     store_full = _store_full_raw()
-    client = SecClient()
 
-    # 1. Spine (cheap, full).
-    spine_upserts, capped = _refresh_spine(client, companies_repo, now_iso, errors)
+    spine_upserts, capped, enriched = 0, False, 0
+    if not logos_only:
+        client = SecClient()
 
-    # 2. Time-budgeted incremental enrichment (drains the backlog per invocation).
-    deadline = clock() + time_budget_s
-    enriched = 0
-    seen: set = set()
-    while clock() < deadline:
-        batch = companies_repo.stalest_for_enrichment(batch_size)
-        fresh = [c for c in batch if c.get("id") not in seen]
-        if not fresh:
-            break  # wrapped around — nothing left to advance this run
-        for company_record in fresh:
-            if clock() >= deadline:
-                break
-            seen.add(company_record.get("id"))
-            try:
-                enrichment = _enrich_one(company_record, client, raw_repo, now_iso, errors, counts, store_full)
-                if enrichment:
-                    companies_repo.upsert(enrichment)
-                    enriched += 1
-            except Exception as exc:  # noqa: BLE001 - one company must not fail the run
-                errors.append(f"{company_record.get('id', '?')}: {exc}")
+        # 1. Spine (cheap, full).
+        spine_upserts, capped = _refresh_spine(client, companies_repo, now_iso, errors)
 
-    # 3. Bounded logo resolution (Wikidata P249→P154) for companies missing one.
-    _resolve_logos_pass(companies_repo, now_iso, errors, counts, _logo_batch())
+        # 2. Time-budgeted incremental enrichment (drains the backlog per invocation).
+        deadline = clock() + time_budget_s
+        seen: set = set()
+        while clock() < deadline:
+            batch = companies_repo.stalest_for_enrichment(batch_size)
+            fresh = [c for c in batch if c.get("id") not in seen]
+            if not fresh:
+                break  # wrapped around — nothing left to advance this run
+            for company_record in fresh:
+                if clock() >= deadline:
+                    break
+                seen.add(company_record.get("id"))
+                try:
+                    enrichment = _enrich_one(company_record, client, raw_repo, now_iso, errors, counts, store_full)
+                    if enrichment:
+                        companies_repo.upsert(enrichment)
+                        enriched += 1
+                except Exception as exc:  # noqa: BLE001 - one company must not fail the run
+                    errors.append(f"{company_record.get('id', '?')}: {exc}")
 
-    # 4. Recompute the dynamic domains collection from what is actually present.
-    all_records = companies_repo.all()
-    for domain in sic.domains_from_records(all_records):
-        domains_repo.upsert(domain)
+    # 3. Time-budgeted logo resolution (Wikidata) — drains as much as it can.
+    logo_deadline = clock() + _logo_time_budget_s(logos_only)
+    _resolve_logos_pass(companies_repo, now_iso, errors, counts, _logo_batch(),
+                        logo_deadline, clock)
+
+    # 4. Recompute the dynamic domains collection from what is actually present
+    #    (skipped in logos_only mode — domains are unaffected by logo resolution).
+    if not logos_only:
+        all_records = companies_repo.all()
+        for domain in sic.domains_from_records(all_records):
+            domains_repo.upsert(domain)
 
     unenriched_remaining = companies_repo.count_unenriched()
     logos_remaining = companies_repo.count_missing_logo()
@@ -359,6 +392,7 @@ def run_refresh(db, *, batch_size: int | None = None, now_iso: str,
         "logos_found": counts["logos_found"],
         "logos_checked": counts["logos_checked"],
         "logos_remaining": logos_remaining,
+        "logos_only": logos_only,
         "store_full_raw": store_full,
         "unenriched_remaining": unenriched_remaining,
         "capped": capped,
