@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Logo crawl matched almost nothing** (`logos_found: 1` per 300 checked): the
+  Wikidata query only looked at the top-level truthy ticker statement
+  (`wdt:P249`), but most companies store their ticker as a **qualifier**
+  (`pq:P249`) on the "stock exchange" statement (`p:P414`). The query now
+  matches **either** form via `UNION`, which recovers the large majority of
+  filers. Added `/api/refresh?recheck_logos=1` (secret-gated) to re-queue
+  companies previously recorded as misses so the improved resolver re-checks
+  them (`CompanyRepository.requeue_logo_misses()`).
+
 ### Added
 - **Live-updating landing page (polling)**: the page now keeps itself current
   while the server-side backfill runs, instead of a single load. A tiny new

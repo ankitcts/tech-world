@@ -24,8 +24,9 @@ from urllib.parse import quote
 WIKIDATA_SPARQL_URL = "https://query.wikidata.org/sparql"
 
 # Wikidata properties.
-P_TICKER = "P249"   # stock exchange ticker symbol
-P_LOGO = "P154"     # logo image (file on Wikimedia Commons)
+P_TICKER = "P249"     # stock exchange ticker symbol
+P_LOGO = "P154"       # logo image (file on Wikimedia Commons)
+P_EXCHANGE = "P414"   # stock exchange (ticker is usually a pq:P249 qualifier here)
 
 DEFAULT_THUMB_WIDTH = 240
 
@@ -47,11 +48,22 @@ def _escape_sparql_literal(value: str) -> str:
 
 
 def build_logo_query(tickers) -> str:
-    """Build a SPARQL query mapping each ticker (P249) to its logo (P154).
+    """Build a SPARQL query mapping each ticker to its company logo (P154).
 
     Uses a ``VALUES`` block so one request resolves a whole batch. The ticker is
     echoed back in the results, so :func:`parse_logo_results` can key logos to
     the exact ticker that matched — no positional guessing.
+
+    Critically, Wikidata stores the ticker symbol (``P249``) two ways and most
+    companies use the *second*:
+
+    * as a top-level truthy statement (``wdt:P249``), or — far more commonly —
+    * as a **qualifier** (``pq:P249``) on the "stock exchange" statement
+      (``p:P414``).
+
+    A query that only checks ``wdt:P249`` therefore misses the large majority of
+    filers. The ``UNION`` below matches either form, then requires the entity's
+    own logo (``P154``).
     """
     seen: list[str] = []
     for t in tickers:
@@ -62,7 +74,11 @@ def build_logo_query(tickers) -> str:
     return (
         "SELECT ?ticker ?logo WHERE { "
         f"VALUES ?ticker {{ {values} }} "
+        "{ "
         f"?company wdt:{P_TICKER} ?ticker . "
+        "} UNION { "
+        f"?company p:{P_EXCHANGE} [ pq:{P_TICKER} ?ticker ] . "
+        "} "
         f"?company wdt:{P_LOGO} ?logo . "
         "}"
     )

@@ -361,6 +361,15 @@ def test_build_logo_query_dedups_and_escapes():
     assert "SELECT ?ticker ?logo" in q
 
 
+def test_build_logo_query_matches_ticker_as_exchange_qualifier():
+    # Most companies store the ticker as a pq:P249 qualifier on the p:P414
+    # stock-exchange statement, not as a truthy wdt:P249 — the query must cover
+    # both via UNION or it misses the large majority of filers.
+    q = logos.build_logo_query(["AAPL"])
+    assert "UNION" in q
+    assert "p:P414" in q and "pq:P249" in q
+
+
 def test_build_logo_query_escapes_quotes():
     q = logos.build_logo_query(['BRK"A'])
     assert '\\"' in q  # embedded quote escaped, not query-breaking
