@@ -349,6 +349,120 @@ function renderDetail(data, id) {
   </article>`;
 }
 
+/* ---------- live updates (polling; Vercel serverless has no WebSocket) ----------
+   The backfill (SEC enrichment + Wikidata logo crawl) runs continuously on the
+   server, so the page polls a tiny /api/stats for a change signature and, only
+   when it moves, re-fetches /api/companies and re-renders the current view in
+   place — no reload, search box and view mode preserved. Polls faster while the
+   backfill is busy, slows when idle, pauses on a hidden tab, and stops once the
+   dataset is stable. */
+let LIVE_TIMER = null;
+let LIVE_SIG = null;      // last-seen "companies:logos" signature
+let LIVE_MISSES = 0;      // consecutive stats fetch failures
+let LIVE_STABLE = 0;      // consecutive idle ticks with no change
+
+function nfmt(n) { return Number(n || 0).toLocaleString(); }
+
+function liveChip() {
+  let el = document.getElementById("live-chip");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "live-chip";
+    el.hidden = true;
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
+function updateChip(stats) {
+  const el = liveChip();
+  if (!stats || !stats.ok) { el.hidden = true; return; }
+  const busy = (stats.logos_remaining > 0) || (stats.unenriched_remaining > 0);
+  const bits = [`${nfmt(stats.logos)} logos`];
+  if (stats.logos_remaining > 0) bits.push(`${nfmt(stats.logos_remaining)} to go`);
+  el.className = busy ? "is-busy" : "is-done";
+  el.innerHTML = `<span class="live-dot"></span><span class="live-txt">${
+    busy ? "Live · " : "Up to date · "}${bits.join(" · ")}</span>`;
+  el.hidden = false;
+}
+
+async function fetchStats() {
+  try {
+    const r = await fetch("/api/stats", { cache: "no-store" });
+    if (r.ok) return await r.json();
+  } catch { /* skip this tick */ }
+  return null;
+}
+
+async function refetchData() {
+  try {
+    const r = await fetch("/api/companies", { cache: "no-store" });
+    if (!r.ok) return false;
+    const data = await r.json();
+    DATA_SOURCE = r.headers.get("X-Data-Source") || DATA_SOURCE;
+    data.domains = data.domains || [];
+    data.companies = data.companies || [];
+    DATA = mergeWithSeed(data);
+    DOMAIN_BY_ID = Object.fromEntries(DATA.domains.map((d) => [d.id, d]));
+    return true;
+  } catch { return false; }
+}
+
+function rerenderCurrent() {
+  const id = new URLSearchParams(location.search).get("company");
+  if (id) { renderDetail(DATA, id); return; }
+  const box = document.getElementById("home-content");
+  if (!box) { renderHome(); return; }
+  // Re-render just the content grid so the hero/toolbar (and search focus) stay
+  // put. Preserve the caret if the visitor is mid-search.
+  const active = document.activeElement;
+  const inSearch = active && active.id === "home-search";
+  const caret = inSearch ? active.selectionStart : null;
+  renderContent();
+  if (inSearch) {
+    const el = document.getElementById("home-search");
+    if (el) { el.focus(); try { el.setSelectionRange(caret, caret); } catch { /* noop */ } }
+  }
+}
+
+function scheduleLive(ms) {
+  clearTimeout(LIVE_TIMER);
+  LIVE_TIMER = setTimeout(tickLive, ms);
+}
+
+async function tickLive() {
+  if (document.hidden) { scheduleLive(4000); return; }   // wait for the tab to return
+  const s = await fetchStats();
+  if (!s) {
+    LIVE_MISSES += 1;
+    if (LIVE_MISSES >= 3) { updateChip(null); return; }   // endpoint absent → give up quietly
+    scheduleLive(10000);
+    return;
+  }
+  LIVE_MISSES = 0;
+  updateChip(s);
+  const busy = (s.logos_remaining > 0) || (s.unenriched_remaining > 0);
+  const sig = `${s.companies}:${s.logos}`;
+  if (sig !== LIVE_SIG) {
+    if (LIVE_SIG !== null && await refetchData()) rerenderCurrent();
+    LIVE_SIG = sig;
+    LIVE_STABLE = 0;
+  } else {
+    LIVE_STABLE += 1;
+  }
+  // Stop once the backfill is done and nothing has changed for a while.
+  if (!busy && LIVE_STABLE >= 3) return;
+  scheduleLive(busy ? 8000 : 20000);
+}
+
+function startLive() {
+  LIVE_SIG = `${DATA.companies.length}:seed`;   // force a real diff on the first tick
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) scheduleLive(500);
+  });
+  scheduleLive(2000);
+}
+
 /* ---------- boot ---------- */
 async function load() {
   for (const url of ["/api/companies", "./companies.json"]) {
@@ -377,4 +491,5 @@ async function load() {
   DOMAIN_BY_ID = Object.fromEntries(DATA.domains.map((d) => [d.id, d]));
   const id = new URLSearchParams(location.search).get("company");
   if (id) renderDetail(DATA, id); else renderHome();
+  startLive();   // begin live polling (re-renders in place as the backfill lands)
 })();
