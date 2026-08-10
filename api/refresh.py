@@ -90,6 +90,18 @@ class handler(BaseHTTPRequestHandler):
                 self._send(500, {"ok": False, "error": str(exc)})
             return
 
+        # Maintenance: re-queue recorded logo misses so an improved resolver
+        # re-checks companies that previously came up empty. Secret-gated.
+        if (params.get("recheck_logos", [""])[0] or "").strip() in ("1", "true", "yes", "on"):
+            try:
+                from apps.techatlas.pipeline.models import CompanyRepository, get_database
+
+                n = CompanyRepository(get_database()).requeue_logo_misses()
+                self._send(200, {"ok": True, "requeued_logo_misses": n})
+            except Exception as exc:  # noqa: BLE001
+                self._send(500, {"ok": False, "error": str(exc)})
+            return
+
         try:
             from apps.techatlas.pipeline.build_dataset import run_refresh
             from apps.techatlas.pipeline.models import get_database

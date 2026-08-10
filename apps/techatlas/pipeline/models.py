@@ -115,6 +115,19 @@ class CompanyRepository:
         return self.col.count_documents(
             {"logo_checked_at": None, "ticker": {"$nin": [None, ""]}})
 
+    def requeue_logo_misses(self) -> int:
+        """Re-queue recorded logo *misses* (``logo_url`` null) for another pass.
+
+        Clears ``logo_checked_at`` only where no logo was resolved, so an
+        improved resolver re-checks the companies that came up empty without
+        re-hitting the ones already resolved. Returns the number re-queued.
+        """
+        res = self.col.update_many(
+            {"logo_url": None, "logo_checked_at": {"$ne": None}},
+            {"$set": {"logo_checked_at": None}},
+        )
+        return res.modified_count
+
     def set_logo(self, company_id: str, logo_url, source: str, checked_at: str) -> None:
         """Record a logo-resolution result (``logo_url`` may be ``None`` = a miss).
 
