@@ -117,30 +117,16 @@ function initials(c) {
 }
 const tileBg = (c) => c.color || curatedFor(c)?.color || fallbackColor(c.name);
 
-// Logo-by-ticker image sources (keyless), tried in order, then the monogram.
-const LOGO_SRC = (t) => `https://assets.parqet.com/logos/symbol/${encodeURIComponent(t)}?format=png`;
-const LOGO_ALT = (t) => `https://financialmodelingprep.com/image-stock/${encodeURIComponent(t)}.png`;
-// On error: try the fallback source once, then give up (monogram behind shows).
-const LOGO_ONERR = "if(!this.dataset.f){this.dataset.f=1;this.src=this.dataset.alt}else{this.remove()}";
-
-// Returns {bg, inner} for a company tile. Priority: real brand SVG (curated) →
-// logo-by-ticker image with a monogram behind it as fallback → monogram.
+// Returns {bg, inner} for a company tile. We only ever show a VERIFIED brand
+// mark (curated simple-icons); every other company gets a clean monogram —
+// never a logo guessed from a ticker image service, which surfaces mismatches.
 function tileParts(c) {
   const slug = c.icon || curatedFor(c)?.icon;
   const icon = slug && ICONS[slug];
+  const bg = tileBg(c);
   if (icon) {
-    const bg = tileBg(c);
     return { bg, inner: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="${ink(bg)}"><path d="${esc(icon.path)}"/></svg>` };
   }
-  const t = c.ticker ? String(c.ticker).toUpperCase() : "";
-  if (t) {
-    const bg = "#FFFFFF"; // light tile so fetched logos read
-    return { bg, inner:
-      `<span class="mono" style="color:${ink(bg)}">${esc(initials(c))}</span>` +
-      `<img class="logo-img" alt="" loading="lazy" src="${esc(LOGO_SRC(t))}" ` +
-      `data-alt="${esc(LOGO_ALT(t))}" onerror="${LOGO_ONERR}">` };
-  }
-  const bg = tileBg(c);
   return { bg, inner: `<span class="mono" style="color:${ink(bg)}">${esc(initials(c))}</span>` };
 }
 
