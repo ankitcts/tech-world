@@ -129,15 +129,25 @@ function brokenLogoSVG() {
     + '<path d="M4.5 4.5l15 15"/></svg>';
 }
 
-// Returns {bg, inner} for a company tile. We only ever show a VERIFIED brand
-// mark (curated simple-icons); every other company gets the broken-logo
-// placeholder — never a logo guessed from a ticker image service.
+// Broken-logo glyph is reused by the <img> onerror fallback below.
+window.__thBrokenLogo = brokenLogoSVG;
+
+// Returns {bg, inner} for a company tile. Logo priority, VERIFIED sources only:
+//   1. curated simple-icons brand mark (hand-checked), else
+//   2. the company's own official logo resolved from Wikidata (P249 ticker →
+//      P154 logo on Wikimedia Commons) — entity-verified, not a ticker-image
+//      guess; if the image 404s at runtime it falls back to the placeholder,
+//   3. the broken-logo placeholder — never a logo faked from a ticker service.
 function tileParts(c) {
   const slug = c.icon || curatedFor(c)?.icon;
   const icon = slug && ICONS[slug];
   if (icon) {
     const bg = tileBg(c);
     return { bg, inner: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="${ink(bg)}"><path d="${esc(icon.path)}"/></svg>` };
+  }
+  const url = c.logo_url || curatedFor(c)?.logo_url;
+  if (url) {
+    return { bg: "#FFFFFF", inner: `<img class="logo-img" src="${esc(url)}" alt="" loading="lazy" onerror="this.outerHTML=window.__thBrokenLogo()">` };
   }
   return { bg: PLACEHOLDER_BG, inner: brokenLogoSVG() };
 }

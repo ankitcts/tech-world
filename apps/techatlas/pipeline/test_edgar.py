@@ -8,7 +8,7 @@ fixtures. Plain asserts; run from the repo root:
 
 from __future__ import annotations
 
-from apps.techatlas.pipeline import build_dataset, edgar, sic
+from apps.techatlas.pipeline import build_dataset, edgar, logos, sic
 from apps.techatlas.pipeline.tiers import classify_tier
 
 
@@ -347,6 +347,57 @@ def test_tier_and_domain_wiring():
 
 def test_unknown_headcount_is_unknown_tier():
     assert classify_tier(None) == "unknown"
+
+
+# --- logos (Wikidata P249 -> P154; pure) ------------------------------------
+
+def test_build_logo_query_dedups_and_escapes():
+    q = logos.build_logo_query(["AAPL", "AAPL", " MSFT ", ""])
+    # Both distinct tickers appear once; blank dropped.
+    assert '"AAPL"' in q and '"MSFT"' in q
+    assert q.count('"AAPL"') == 1
+    # Uses the correct properties and echoes the ticker back for keying.
+    assert "wdt:P249" in q and "wdt:P154" in q
+    assert "SELECT ?ticker ?logo" in q
+
+
+def test_build_logo_query_escapes_quotes():
+    q = logos.build_logo_query(['BRK"A'])
+    assert '\\"' in q  # embedded quote escaped, not query-breaking
+
+
+def test_commons_thumb_forces_https_and_width():
+    src = "http://commons.wikimedia.org/wiki/Special:FilePath/Apple%20logo.svg"
+    thumb = logos.commons_thumb(src, width=200)
+    assert thumb.startswith("https://")
+    assert thumb.endswith("?width=200")
+
+
+def test_commons_thumb_leaves_non_filepath_urls_alone():
+    src = "https://example.com/logo.png"
+    assert logos.commons_thumb(src) == src
+
+
+def test_parse_logo_results_keys_by_ticker_first_wins():
+    data = {"results": {"bindings": [
+        {"ticker": {"value": "AAPL"},
+         "logo": {"value": "http://commons.wikimedia.org/wiki/Special:FilePath/A.svg"}},
+        {"ticker": {"value": "AAPL"},
+         "logo": {"value": "http://commons.wikimedia.org/wiki/Special:FilePath/B.svg"}},
+        {"ticker": {"value": "MSFT"},
+         "logo": {"value": "http://commons.wikimedia.org/wiki/Special:FilePath/M.svg"}},
+    ]}}
+    out = logos.parse_logo_results(data)
+    assert set(out) == {"AAPL", "MSFT"}
+    assert "Special:FilePath/A.svg" in out["AAPL"]  # first binding wins
+    assert out["AAPL"].startswith("https://")
+
+
+def test_parse_logo_results_skips_missing_logo():
+    data = {"results": {"bindings": [
+        {"ticker": {"value": "NOPE"}},  # no logo binding -> not fabricated
+    ]}}
+    assert logos.parse_logo_results(data) == {}
 
 
 # --- runner -----------------------------------------------------------------

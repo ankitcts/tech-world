@@ -35,6 +35,7 @@ from apps.techatlas.pipeline.edgar import (
     latest_filing,
     ownership_xml_url,
 )
+from apps.techatlas.pipeline.logos import WikidataClient
 from apps.techatlas.pipeline.models import (
     AgentRunRepository,
     CompanyRepository,
@@ -45,6 +46,7 @@ from apps.techatlas.pipeline.tiers import classify_tier
 
 DEFAULT_BATCH_SIZE = 40
 DEFAULT_TIME_BUDGET_S = 45       # per-invocation enrichment budget (serverless-safe)
+DEFAULT_LOGO_BATCH = 300         # companies whose logo we resolve per invocation
 RAW_MAX_BYTES = 6_000_000        # keep original bytes only under this size
 TEXT_MAX_BYTES = 8_000_000       # cap cleaned text (flagged when truncated)
 
@@ -242,6 +244,41 @@ def _enrich_one(company_record, client, raw_repo, now_iso, errors, counts, store
     }
 
 
+def _logo_batch() -> int:
+    raw = os.environ.get("TECHATLAS_LOGO_BATCH")
+    if raw and raw.strip().lstrip("-").isdigit():
+        return max(0, int(raw))
+    return DEFAULT_LOGO_BATCH
+
+
+def _resolve_logos_pass(companies_repo, now_iso, errors, counts, limit):
+    """Attach official logos (Wikidata P249→P154) to companies missing one.
+
+    Bounded to ``limit`` companies per invocation and resolved in one batched
+    SPARQL request. A ticker that resolves to no logo is still stamped
+    ``logo_checked_at`` (a recorded miss), so the frontend shows the broken-logo
+    placeholder and the company is not retried ahead of untouched ones. Never
+    fabricates: only entity-verified Commons logos are stored.
+    """
+    if limit <= 0:
+        return
+    pending = companies_repo.missing_logo(limit)
+    if not pending:
+        return
+    tickers = [c["ticker"] for c in pending if c.get("ticker")]
+    try:
+        resolved = WikidataClient().resolve_logos(tickers)
+    except Exception as exc:  # noqa: BLE001 - logo failures must not fail the run
+        errors.append(f"logos: {exc}")
+        return
+    for c in pending:
+        url = resolved.get(c.get("ticker"))
+        companies_repo.set_logo(c["id"], url, "wikidata:P154", now_iso)
+        if url:
+            counts["logos_found"] = counts.get("logos_found", 0) + 1
+        counts["logos_checked"] = counts.get("logos_checked", 0) + 1
+
+
 def _time_budget_s() -> float:
     raw = os.environ.get("TECHATLAS_TIME_BUDGET_S")
     try:
@@ -273,7 +310,8 @@ def run_refresh(db, *, batch_size: int | None = None, now_iso: str,
         repo.ensure_indexes()
 
     errors: list[str] = []
-    counts = {"employees_found": 0, "leadership_found": 0, "unknown_tier": 0, "filings_stored": 0}
+    counts = {"employees_found": 0, "leadership_found": 0, "unknown_tier": 0,
+              "filings_stored": 0, "logos_found": 0, "logos_checked": 0}
     store_full = _store_full_raw()
     client = SecClient()
 
@@ -301,12 +339,16 @@ def run_refresh(db, *, batch_size: int | None = None, now_iso: str,
             except Exception as exc:  # noqa: BLE001 - one company must not fail the run
                 errors.append(f"{company_record.get('id', '?')}: {exc}")
 
-    # 3. Recompute the dynamic domains collection from what is actually present.
+    # 3. Bounded logo resolution (Wikidata P249→P154) for companies missing one.
+    _resolve_logos_pass(companies_repo, now_iso, errors, counts, _logo_batch())
+
+    # 4. Recompute the dynamic domains collection from what is actually present.
     all_records = companies_repo.all()
     for domain in sic.domains_from_records(all_records):
         domains_repo.upsert(domain)
 
     unenriched_remaining = companies_repo.count_unenriched()
+    logos_remaining = companies_repo.count_missing_logo()
     summary = {
         "spine_upserts": spine_upserts,
         "enriched": enriched,
@@ -314,6 +356,9 @@ def run_refresh(db, *, batch_size: int | None = None, now_iso: str,
         "leadership_found": counts["leadership_found"],
         "unknown_tier": counts["unknown_tier"],
         "filings_stored": counts["filings_stored"],
+        "logos_found": counts["logos_found"],
+        "logos_checked": counts["logos_checked"],
+        "logos_remaining": logos_remaining,
         "store_full_raw": store_full,
         "unenriched_remaining": unenriched_remaining,
         "capped": capped,

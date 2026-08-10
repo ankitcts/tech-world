@@ -160,6 +160,8 @@ committed):
 | `MONGODB_DB` | Database name (default `techatlas`). |
 | `CRON_SECRET` | Shared secret Vercel sends on cron calls. |
 | `SEC_USER_AGENT` | Descriptive UA `name email` — **required** by SEC fair-access policy. |
+| `WIKIDATA_USER_AGENT` | Descriptive UA for the Wikidata logo crawl (optional — falls back to `SEC_USER_AGENT`). |
+| `TECHATLAS_LOGO_BATCH` | Companies whose logo to resolve per invocation (optional, default `120`; `0` disables). |
 | `EMBEDDING_PROVIDER` + provider key | RAG embeddings (e.g. `OPENAI_API_KEY`). |
 
 **d. Atlas network access.** Allow Vercel egress (Atlas allowlist `0.0.0.0/0`
