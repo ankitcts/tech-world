@@ -117,17 +117,29 @@ function initials(c) {
 }
 const tileBg = (c) => c.color || curatedFor(c)?.color || fallbackColor(c.name);
 
+// Neutral "no verified logo" placeholder — a broken-image glyph shown whenever
+// we don't have a VERIFIED brand mark, instead of guessing/faking a logo.
+const PLACEHOLDER_BG = "#141B2C";
+function brokenLogoSVG() {
+  return '<svg class="ph-logo" viewBox="0 0 24 24" fill="none" stroke="#6B7890" '
+    + 'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + '<rect x="3" y="3" width="18" height="18" rx="3"/>'
+    + '<circle cx="9" cy="9.5" r="1.5"/>'
+    + '<path d="M4.5 17.5l4.2-4.6 3.3 3.3 3-3.2 4 4.3"/>'
+    + '<path d="M4.5 4.5l15 15"/></svg>';
+}
+
 // Returns {bg, inner} for a company tile. We only ever show a VERIFIED brand
-// mark (curated simple-icons); every other company gets a clean monogram —
-// never a logo guessed from a ticker image service, which surfaces mismatches.
+// mark (curated simple-icons); every other company gets the broken-logo
+// placeholder — never a logo guessed from a ticker image service.
 function tileParts(c) {
   const slug = c.icon || curatedFor(c)?.icon;
   const icon = slug && ICONS[slug];
-  const bg = tileBg(c);
   if (icon) {
+    const bg = tileBg(c);
     return { bg, inner: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="${ink(bg)}"><path d="${esc(icon.path)}"/></svg>` };
   }
-  return { bg, inner: `<span class="mono" style="color:${ink(bg)}">${esc(initials(c))}</span>` };
+  return { bg: PLACEHOLDER_BG, inner: brokenLogoSVG() };
 }
 
 function logoInner(c) { return tileParts(c).inner; }
