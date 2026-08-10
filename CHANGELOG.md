@@ -21,8 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Incorrect company logos: dropped the ticker-image logo services (parqet /
   financialmodelingprep) that surfaced wrong or mismatched marks. Tiles now show
-  only a **verified brand mark** (curated simple-icons) or a clean **monogram** —
-  never a logo guessed from a ticker, consistent with the no-wrong-info rule.
+  only a **verified brand mark** (curated simple-icons); companies without one
+  get an explicit **"no verified logo" placeholder** (a neutral broken-image
+  glyph) rather than a guessed logo — consistent with the no-wrong-info rule.
 - Live-data UI regressions on the landing page: (1) brand **logos** now render
   for known companies regardless of source — the curated seed is merged with the
   live SEC data, so familiar companies keep their logo/blurb/domains and are
