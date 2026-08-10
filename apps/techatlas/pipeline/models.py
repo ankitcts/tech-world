@@ -108,6 +108,11 @@ class CompanyRepository:
         )
         return list(cur)
 
+    def count_missing_logo(self) -> int:
+        """How many ticker-bearing companies still have no logo check recorded."""
+        return self.col.count_documents(
+            {"logo_checked_at": None, "ticker": {"$nin": [None, ""]}})
+
     def set_logo(self, company_id: str, logo_url, source: str, checked_at: str) -> None:
         """Record a logo-resolution result (``logo_url`` may be ``None`` = a miss).
 

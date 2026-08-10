@@ -46,7 +46,7 @@ from apps.techatlas.pipeline.tiers import classify_tier
 
 DEFAULT_BATCH_SIZE = 40
 DEFAULT_TIME_BUDGET_S = 45       # per-invocation enrichment budget (serverless-safe)
-DEFAULT_LOGO_BATCH = 120         # companies whose logo we resolve per invocation
+DEFAULT_LOGO_BATCH = 300         # companies whose logo we resolve per invocation
 RAW_MAX_BYTES = 6_000_000        # keep original bytes only under this size
 TEXT_MAX_BYTES = 8_000_000       # cap cleaned text (flagged when truncated)
 
@@ -348,6 +348,7 @@ def run_refresh(db, *, batch_size: int | None = None, now_iso: str,
         domains_repo.upsert(domain)
 
     unenriched_remaining = companies_repo.count_unenriched()
+    logos_remaining = companies_repo.count_missing_logo()
     summary = {
         "spine_upserts": spine_upserts,
         "enriched": enriched,
@@ -357,6 +358,7 @@ def run_refresh(db, *, batch_size: int | None = None, now_iso: str,
         "filings_stored": counts["filings_stored"],
         "logos_found": counts["logos_found"],
         "logos_checked": counts["logos_checked"],
+        "logos_remaining": logos_remaining,
         "store_full_raw": store_full,
         "unenriched_remaining": unenriched_remaining,
         "capped": capped,

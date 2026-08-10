@@ -115,7 +115,14 @@ class handler(BaseHTTPRequestHandler):
             chain_max = 500
         if not (auto and secret and chain < chain_max):
             return
-        if summary.get("enriched", 0) <= 0 or summary.get("unenriched_remaining", 0) <= 0:
+        # Keep chaining while EITHER backfill has more work: enrichment (stalest
+        # 10-K/leadership) or the logo crawl (Wikidata). The logo backlog often
+        # outlives enrichment, so it needs its own continuation trigger.
+        more_enrichment = (summary.get("enriched", 0) > 0
+                           and summary.get("unenriched_remaining", 0) > 0)
+        more_logos = (summary.get("logos_checked", 0) > 0
+                      and summary.get("logos_remaining", 0) > 0)
+        if not (more_enrichment or more_logos):
             return
         host = os.environ.get("VERCEL_URL")
         if not host:
