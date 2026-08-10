@@ -102,12 +102,17 @@ class handler(BaseHTTPRequestHandler):
                 self._send(500, {"ok": False, "error": str(exc)})
             return
 
+        # logos_only: skip SEC enrichment and spend the whole run draining the
+        # logo backlog (fast "fill all logos"). Chains until logos_remaining==0.
+        logos_only = (params.get("logos_only", [""])[0] or "").strip() in (
+            "1", "true", "yes", "on")
+
         try:
             from apps.techatlas.pipeline.build_dataset import run_refresh
             from apps.techatlas.pipeline.models import get_database
 
             db = get_database()
-            summary = run_refresh(db, now_iso=_now_iso())
+            summary = run_refresh(db, now_iso=_now_iso(), logos_only=logos_only)
             self._send(200, {"ok": True, "summary": summary})
         except Exception as exc:  # noqa: BLE001 - report failure, never fabricate
             self._send(500, {"ok": False, "error": str(exc)})
@@ -116,9 +121,10 @@ class handler(BaseHTTPRequestHandler):
         # Self-continue the backfill so a single fire drains the backlog without
         # anyone re-hitting the URL. Best-effort (works on the public production
         # deployment; preview deployments are auth-gated). Bounded + opt-out.
-        self._maybe_continue(secret, chain, summary)
+        self._maybe_continue(secret, chain, summary, logos_only)
 
-    def _maybe_continue(self, secret: str, chain: int, summary: dict) -> None:
+    def _maybe_continue(self, secret: str, chain: int, summary: dict,
+                        logos_only: bool = False) -> None:
         auto = (os.environ.get("TECHATLAS_AUTO_CONTINUE", "1").strip().lower()
                 not in ("0", "false", "no", "off", ""))
         try:
@@ -129,21 +135,29 @@ class handler(BaseHTTPRequestHandler):
             return
         # Keep chaining while EITHER backfill has more work: enrichment (stalest
         # 10-K/leadership) or the logo crawl (Wikidata). The logo backlog often
-        # outlives enrichment, so it needs its own continuation trigger.
-        more_enrichment = (summary.get("enriched", 0) > 0
+        # outlives enrichment, so it needs its own continuation trigger. In
+        # logos_only mode there is no enrichment, so logos alone drive the chain.
+        more_enrichment = ((not logos_only)
+                           and summary.get("enriched", 0) > 0
                            and summary.get("unenriched_remaining", 0) > 0)
         more_logos = (summary.get("logos_checked", 0) > 0
                       and summary.get("logos_remaining", 0) > 0)
         if not (more_enrichment or more_logos):
             return
-        host = os.environ.get("VERCEL_URL")
+        # Prefer the Host the caller actually reached (public + reachable) over
+        # VERCEL_URL, whose per-deployment host can be gated by deployment
+        # protection and silently 401 the self-call, breaking the chain.
+        host = (self.headers.get("Host") or os.environ.get("VERCEL_URL") or "").strip()
         if not host:
             return
         try:
             import urllib.request
-            from urllib.parse import quote
+            from urllib.parse import quote, urlencode
 
-            url = f"https://{host}/api/refresh?key={quote(secret)}&chain={chain + 1}"
+            qs = {"key": secret, "chain": chain + 1}
+            if logos_only:
+                qs["logos_only"] = "1"
+            url = f"https://{host}/api/refresh?{urlencode(qs, quote_via=quote)}"
             req = urllib.request.Request(url, headers={"User-Agent": "techatlas-selfcontinue"})
             # Kick the next invocation; don't block on its full run. The daily
             # cron resumes via the stalest-first cursor if this link is dropped.

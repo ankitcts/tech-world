@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **A single trigger now fills *all* logos.** The logo crawl became a
+  time-budgeted loop that keeps resolving pages until the backlog is drained or
+  the budget is hit (`TECHATLAS_LOGO_TIME_BUDGET_S`), so each invocation fills as
+  many logos as it can instead of a single 300-company page. Self-continuation
+  now targets the **Host the caller actually reached** (rather than
+  `VERCEL_URL`, whose per-deployment host can be gated by deployment protection
+  and silently 401 the chain), so the chain reliably continues until
+  `logos_remaining == 0`. New **`/api/refresh?logos_only=1`** skips the slow SEC
+  enrichment and spends the whole run draining logos — the fast "fill all logos"
+  path; it self-continues on the logo backlog alone. Summary reports
+  `logos_only`.
+
 ### Fixed
 - **Logo crawl matched almost nothing** (`logos_found: 1` per 300 checked): the
   Wikidata query only looked at the top-level truthy ticker statement
