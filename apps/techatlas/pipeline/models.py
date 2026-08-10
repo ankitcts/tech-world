@@ -62,6 +62,8 @@ class CompanyRepository:
     def ensure_indexes(self):
         self.col.create_index("id", unique=True)
         self.col.create_index("domains")
+        self.col.create_index("enriched_at")
+        self.col.create_index("logo_checked_at")
         self.col.create_index([("name", "text"), ("blurb", "text")])
 
     def upsert(self, company: dict) -> None:

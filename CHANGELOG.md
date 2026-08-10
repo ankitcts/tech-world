@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Live-updating landing page (polling)**: the page now keeps itself current
+  while the server-side backfill runs, instead of a single load. A tiny new
+  `/api/stats` endpoint returns cheap counts (`companies`, `logos`,
+  `logos_remaining`, `unenriched_remaining`, `last_run_at`); the frontend polls
+  it (~8s while the backfill is busy, ~20s when idle, paused on a hidden tab)
+  and re-fetches `/api/companies` + re-renders **in place** only when the change
+  signature moves — search box, view mode, and scroll are preserved. A small
+  "Live · N logos · M to go" chip shows progress and settles to "Up to date"
+  when the backfill drains. (Vercel serverless can't hold a WebSocket, so this
+  uses polling — no new infrastructure.) Added `companies` indexes on
+  `enriched_at` + `logo_checked_at` to keep the polled counts cheap.
 - **Official company logos crawled from Wikidata** (`pipeline/logos.py`): each
   company is resolved by its stock **ticker** (`P249`) to that entity's
   **official logo** (`P154`, hosted on Wikimedia Commons), so the mark is tied
